@@ -104,6 +104,7 @@ Not implemented. Removed from the game per the design answers above.
 - A city can only work tiles in its own territory. Water and Mountains can be claimed but yield nothing.
 
 **City Tiles & Yields:**
+- The city's own tile is always worked for free (its terrain yields + 1 Production) and does not use population.
 - Each city automatically works the **best** tiles (those with highest total yields) up to its population cap.
 - **Focus toggle** lets players override auto-selection:
   - **Food Focus**: prioritize food tiles
