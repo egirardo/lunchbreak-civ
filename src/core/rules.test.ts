@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { RULES } from "../data/config";
 import { TECHS } from "../data/techs";
 import { endTurn } from "./game";
 import {
@@ -325,15 +326,23 @@ describe("victory and scoring", () => {
     expect(computeScore(s, 0)).toEqual({ cities: 10, population: 3, techs: 10, territory: 9, buildings: 4, total: 36 });
   });
 
-  it("temples add culture and score each round; 40 culture wins", () => {
+  it("temples add culture and score each round; reaching the culture threshold wins", () => {
     const s = makeState();
     addCity(s, 0, 4, 4, { buildings: ["temple"] });
     const p = s.players[0];
-    if (p) p.culture = 38;
+    if (p) p.culture = RULES.cultureVictoryThreshold - 2;
     const after = processEndOfRound(s);
     expect(after.players[0]?.bonusScore).toBe(2);
     expect(after.phase).toBe("ended");
     expect(after.victory).toBe("culture");
+  });
+
+  it("culture just below the threshold does not win", () => {
+    const s = makeState();
+    addCity(s, 0, 4, 4, { buildings: ["temple"] });
+    const p = s.players[0];
+    if (p) p.culture = RULES.cultureVictoryThreshold - 3;
+    expect(processEndOfRound(s).phase).toBe("playing");
   });
 
   it("researching all 12 techs wins by science", () => {

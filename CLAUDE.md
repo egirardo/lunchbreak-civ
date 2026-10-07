@@ -200,8 +200,8 @@ The game ends at the turn limit (turn 30) or earlier if someone wins:
 - (This is challenging in 30 turns and meant to be a high-risk, high-reward strategy.)
 
 **Culture Victory (Instant Win):**
-- Temples provide 2 Culture per turn (one Temple per city). Culture accumulates per player. Accumulate **40 Culture** to win instantly.
-- (e.g. 4 temples running for 5 turns. Meant to be a specialist win strategy. Threshold to be tuned in playtesting.)
+- Temples provide 2 Culture per turn (one Temple per city). Culture accumulates per player. Accumulate **20 Culture** to win instantly.
+- (Meant to be a specialist win strategy: in simulations, a player rushing Writing → Mathematics → Philosophy and building Temples reaches 20 culture in ~88% of games, around turn 27–28; non-culture players never do. Lowered from 40, which was never reached.)
 
 ### AI Opponents
 

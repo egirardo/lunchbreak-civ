@@ -123,7 +123,7 @@ You earn points from:
 
 - **Domination**: Capture all enemy capitals. Move a unit onto an enemy's capital city to capture it instantly and eliminate them. First to capture all enemies wins.
 - **Science**: Research all 12 techs. Hard to do in 30 turns, but rewarding if you pull it off.
-- **Culture**: Accumulate 40 Culture points. Temples give 2 Culture per turn (one per city), so 4 temples need about 5 turns. Very expensive!
+- **Culture**: Accumulate 20 Culture points. Temples give 2 Culture per turn (one per city). Rush Writing → Mathematics → Philosophy and build Temples early to pull it off before turn 30.
 
 ---
 

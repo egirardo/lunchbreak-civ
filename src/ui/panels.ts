@@ -82,7 +82,7 @@ export function renderTopbar(s: GameState, timeLeft: string): string {
       <span class="stat" title="Estimated real time left">${ICON.time} ${esc(timeLeft)}</span>
       <span class="stat" title="Science per turn and current research">${icon("ui:science", ICON.science)} +${sci} · ${researchText}</span>
       <span class="stat" title="Your score">${ICON.score} ${score}</span>
-      ${p.culture > 0 ? `<span class="stat" title="Culture (40 wins)">${icon("ui:culture", ICON.culture)} ${p.culture}/${RULES.cultureVictoryThreshold}</span>` : ""}
+      ${p.culture > 0 ? `<span class="stat" title="Culture (${RULES.cultureVictoryThreshold} wins)">${icon("ui:culture", ICON.culture)} ${p.culture}/${RULES.cultureVictoryThreshold}</span>` : ""}
     </div>
     <div class="tb-group">
       ${btn("open-tech", `Tech${kbd("T")}`, { title: "Open the tech tree", key: "T" })}
@@ -353,7 +353,7 @@ const VICTORY_TEXT: Record<VictoryType, string> = {
   score: "Score Victory: highest score after turn 30.",
   domination: "Domination Victory: all rival capitals captured.",
   science: "Science Victory: all 12 techs researched.",
-  culture: "Culture Victory: 40 culture accumulated.",
+  culture: `Culture Victory: ${RULES.cultureVictoryThreshold} culture accumulated.`,
   eliminated: "Your capital was captured.",
 };
 
