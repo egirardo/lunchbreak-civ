@@ -87,6 +87,7 @@ export type EventKind =
   | "cityCaptured"
   | "playerEliminated"
   | "improvementBuilt"
+  | "cultureWarning"
   | "gameOver";
 
 export interface GameEvent {

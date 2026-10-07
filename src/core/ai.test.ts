@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { runAiTurn } from "./ai";
+import { aiStrategy, runAiTurn } from "./ai";
+import type { GameState } from "./state";
 import { chooseStartingTech, newGame } from "./rules";
 import { addCity, addUnit, giveTechs, makeState } from "./testUtils";
 
@@ -73,5 +74,51 @@ describe("AI", () => {
     const b = runAiTurn(s, 2);
     expect(a).toEqual(b);
     expect(a.rng).not.toBe(s.rng);
+  });
+
+  describe("culture strategy", () => {
+    /** Finds a seed whose strategy for player 1 matches, so tests don't depend on one magic number. */
+    function withStrategy(s: GameState, strategy: "culture" | "standard"): GameState {
+      for (let seed = 1; seed < 500; seed++) {
+        s.seed = seed;
+        if (aiStrategy(s, 1) === strategy) return s;
+      }
+      throw new Error(`no seed gives ${strategy}`);
+    }
+
+    it("is fixed per game and assigns both strategies across seeds", () => {
+      const s = makeState();
+      expect(aiStrategy(s, 1)).toBe(aiStrategy(s, 1));
+      const picks = new Set<string>();
+      for (let seed = 1; seed <= 50; seed++) {
+        s.seed = seed;
+        picks.add(aiStrategy(s, 1));
+        picks.add(aiStrategy(s, 2));
+      }
+      expect(picks).toEqual(new Set(["culture", "standard"]));
+    });
+
+    it("researches toward Philosophy", () => {
+      const s = withStrategy(makeState(), "culture");
+      addCity(s, 1, 4, 4);
+      giveTechs(s, 1, ["agriculture", "bronzeWorking"]);
+      expect(runAiTurn(s, 1).players[1]?.researching).toBe("writing");
+      giveTechs(s, 1, ["writing"]);
+      expect(runAiTurn(s, 1).players[1]?.researching).toBe("mathematics");
+    });
+
+    it("builds a Temple once it can, while a standard AI does not prioritise it", () => {
+      const culture = withStrategy(makeState(), "culture");
+      addCity(culture, 1, 4, 4);
+      addUnit(culture, "warrior", 1, 4, 4);
+      giveTechs(culture, 1, ["writing", "mathematics", "philosophy"]);
+      expect(runAiTurn(culture, 1).cities[0]?.current).toEqual({ kind: "building", id: "temple" });
+
+      const standard = withStrategy(makeState(), "standard");
+      addCity(standard, 1, 4, 4);
+      addUnit(standard, "warrior", 1, 4, 4);
+      giveTechs(standard, 1, ["writing", "mathematics", "philosophy"]);
+      expect(runAiTurn(standard, 1).cities[0]?.current).not.toEqual({ kind: "building", id: "temple" });
+    });
   });
 });

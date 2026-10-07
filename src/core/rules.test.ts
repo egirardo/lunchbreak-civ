@@ -337,6 +337,18 @@ describe("victory and scoring", () => {
     expect(after.victory).toBe("culture");
   });
 
+  it("warns every player once when someone passes halfway to a culture victory", () => {
+    const s = makeState();
+    addCity(s, 1, 4, 4, { buildings: ["temple"] });
+    const p = s.players[1];
+    if (p) p.culture = RULES.cultureVictoryThreshold / 2 - 1;
+    const after = processEndOfRound(s);
+    const warnings = after.events.filter((e) => e.kind === "cultureWarning");
+    expect(warnings).toHaveLength(1);
+    expect(warnings[0]?.involves).toContain(0);
+    expect(processEndOfRound(after).events.filter((e) => e.kind === "cultureWarning")).toHaveLength(1);
+  });
+
   it("culture just below the threshold does not win", () => {
     const s = makeState();
     addCity(s, 0, 4, 4, { buildings: ["temple"] });

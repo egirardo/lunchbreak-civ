@@ -476,6 +476,15 @@ function processCity(s: GameState, city: City): void {
   owner.bonusScore += y.scorePerTurn;
 }
 
+/** Announce to everyone when a player passes halfway to a culture victory, so rivals can react. */
+function warnOfCultureLeaders(s: GameState, before: number[]): void {
+  const half = RULES.cultureVictoryThreshold / 2;
+  for (const p of s.players) {
+    if (!p.alive || (before[p.id] ?? 0) >= half || p.culture < half) continue;
+    addEvent(s, "cultureWarning", `${p.name} is halfway to a Culture Victory (${p.culture}/${RULES.cultureVictoryThreshold})!`, s.players.map((x) => x.id));
+  }
+}
+
 function processResearch(s: GameState, p: Player): void {
   const science = citiesOf(s, p.id).reduce((n, c) => n + cityYields(s, c).science, 0);
   p.science += science;
@@ -509,7 +518,9 @@ export function processEndOfRound(state: GameState): GameState {
   const s = clone(state);
 
   completeWorkerTasks(s);
+  const cultureBefore = s.players.map((p) => p.culture);
   for (const city of [...s.cities]) processCity(s, city);
+  warnOfCultureLeaders(s, cultureBefore);
   for (const p of s.players) if (p.alive) processResearch(s, p);
   checkInstantVictory(s);
 

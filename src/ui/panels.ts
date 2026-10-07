@@ -250,6 +250,20 @@ export function eventList(events: GameEvent[], empty: string): string {
   return `<ul class="events">${events.map((e) => `<li><span class="ev-turn">T${e.turn}</span> ${esc(e.message)}</li>`).join("")}</ul>`;
 }
 
+function rivalsPanel(s: GameState): string {
+  const half = RULES.cultureVictoryThreshold / 2;
+  const rows = s.players
+    .filter((p) => p.id !== HUMAN_PLAYER)
+    .map((p) => {
+      if (!p.alive) return `<li><span class="rival-swatch" style="background:${p.color}"></span> ${esc(p.name)}: eliminated</li>`;
+      const culture = p.culture > 0
+        ? ` · <span class="${p.culture >= half ? "culture-alert" : ""}">${icon("ui:culture", ICON.culture)} ${p.culture}/${RULES.cultureVictoryThreshold}${p.culture >= half ? " ⚠" : ""}</span>`
+        : "";
+      return `<li><span class="rival-swatch" style="background:${p.color}"></span> ${esc(p.name)}: 🏆 ${computeScore(s, p.id).total} · ${citiesOf(s, p.id).length === 1 ? "1 city" : `${citiesOf(s, p.id).length} cities`}${culture}</li>`;
+    });
+  return `<section class="panel rivals" aria-label="Rivals"><h3>Rivals</h3><ul class="rival-list">${rows.join("")}</ul></section>`;
+}
+
 function logPanel(s: GameState, ui: UiState): string {
   const recent = s.events.filter((e) => e.involves.includes(HUMAN_PLAYER)).slice(-8).reverse();
   const lastTurn = ui.lastTurnEvents.length
@@ -259,7 +273,7 @@ function logPanel(s: GameState, ui: UiState): string {
 }
 
 export function renderSidebar(s: GameState, ui: UiState): string {
-  return [warnings(s), attackPanel(s, ui), cityPanel(s, ui), unitPanel(s, ui), tileInfo(s, ui), logPanel(s, ui)].join("");
+  return [warnings(s), attackPanel(s, ui), cityPanel(s, ui), unitPanel(s, ui), tileInfo(s, ui), rivalsPanel(s), logPanel(s, ui)].join("");
 }
 
 // ---------- modals ----------
