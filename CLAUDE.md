@@ -124,7 +124,7 @@ Not implemented. Removed from the game per the design answers above.
 | Workshop | Engineering | 25 | +2 Production in city |
 | Walls | Bronze Working | 20 | +50% defense bonus when this city is attacked (see Combat) |
 | Library | Writing | 25 | +1 Science per turn in city (+2 with Mathematics) |
-| Temple | Philosophy | 30 | +2 Culture per turn and +2 score per turn. No happiness system. |
+| Temple | Philosophy | 40 | +2 Culture per turn and +2 score per turn. No happiness system. |
 | University | Education | 40 | +3 Science per turn in city (stacks with Library) |
 
 Each building can be built **once per city**.
@@ -200,8 +200,8 @@ The game ends at the turn limit (turn 30) or earlier if someone wins:
 - (This is challenging in 30 turns and meant to be a high-risk, high-reward strategy.)
 
 **Culture Victory (Instant Win):**
-- Temples provide 2 Culture per turn (one Temple per city). Culture accumulates per player. Accumulate **20 Culture** to win instantly.
-- (Meant to be a specialist win strategy: in simulations, a player rushing Writing → Mathematics → Philosophy and building Temples reaches 20 culture in ~88% of games, around turn 27–28; non-culture players never do. Lowered from 40, which was never reached.)
+- Temples provide 2 Culture per turn (one Temple per city). Culture accumulates per player. Accumulate **25 Culture** to win instantly.
+- (Meant to be a specialist win strategy, reached late in the game. Some AIs pursue it too. Tuning history and simulation results are in `docs/balance.md`.)
 
 ### AI Opponents
 

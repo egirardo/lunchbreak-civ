@@ -8,6 +8,24 @@ _No human playtests logged yet. For each one, record: date, difficulty, total ti
 
 ## Changes
 
+### 2026-10-07 — Culture threshold 20 → 25, Temple cost 30 → 40
+
+**Why:** with AIs pursuing culture, culture victories ended 34 of 60 Normal games and culture-strategy AIs won 55% (fair share is about 33%).
+
+**Result (60 seeds × Easy/Normal, all seats AI-driven):**
+
+| Difficulty | Game endings | Culture-strategy wins | Standard wins |
+|---|---|---|---|
+| Normal | 17 culture / 40 score / 3 other | 43% (17 culture + 12 score, of 67) | 27% |
+| Easy | 2 culture / 58 score | 40% (2 culture + 25 score, of 67) | 29% |
+
+Average techs per player: 8.0 (Normal), 7.5 (Easy). Average cities: 2.7 / 2.4.
+
+**Correction to the previous entry:** culture-strategy AIs do *not* win more often on score. On Normal their score-win rate (12/67, 18%) is below standard AIs' (27%); their edge comes entirely from culture victories. Easy figures are skewed because the human seat (AI-driven in simulation) has no Easy production penalty. Making the standard AI open with Writing/Mathematics was tried and made no measurable difference, so it was reverted.
+
+**Still open:** culture-strategy AIs remain above a fair share on Normal (43%). Check in human playtests whether culture feels too strong before tuning further.
+
+
 ### 2026-10-07 — AI culture strategy (no rule changes yet)
 
 **Change:** each AI now gets a fixed strategy per game, decided by the seed: 35% "culture" (rush Writing → Mathematics → Philosophy, then build Temples first), otherwise "standard". AIs build up military and attack at even odds when a rival reaches 25% of the culture threshold. Everyone is warned when a player passes halfway, and a Rivals panel shows each rival's culture.
@@ -30,9 +48,7 @@ A fair share is about 33% in a 3-player game, so culture is currently too strong
 | 20 | 50 | 19 | 48% |
 | 25 | 40 | 17 | 43% |
 
-Culture-strategy AIs keep winning about 45–50% even when culture endings drop, because they also win on score. Rushing science is a stronger plan than the standard AI's economy-first research. That points at standard-AI weakness as well as culture tuning.
-
-**Pending decision:** whether to raise Temple cost and/or the threshold.
+**Decision:** threshold 25, Temple cost 40 (see the next entry).
 
 
 ### 2026-10-07 — Culture victory threshold 40 → 20

@@ -23,6 +23,6 @@ export const BUILDINGS: Record<BuildingId, BuildingDef> = {
   workshop: { ...base, id: "workshop", name: "Workshop", cost: 25, requiresTech: "engineering", production: 2, description: "+2 production per turn." },
   walls: { ...base, id: "walls", name: "Walls", cost: 20, requiresTech: "bronzeWorking", defenseMultiplier: 1.5, description: "+50% city defense." },
   library: { ...base, id: "library", name: "Library", cost: 25, requiresTech: "writing", science: 1, description: "+1 science per turn (+2 with Mathematics)." },
-  temple: { ...base, id: "temple", name: "Temple", cost: 30, requiresTech: "philosophy", culture: 2, scorePerTurn: 2, description: "+2 culture and +2 score per turn." },
+  temple: { ...base, id: "temple", name: "Temple", cost: 40, requiresTech: "philosophy", culture: 2, scorePerTurn: 2, description: "+2 culture and +2 score per turn." },
   university: { ...base, id: "university", name: "University", cost: 40, requiresTech: "education", science: 3, scorePerTurn: 3, description: "+3 science and +3 score per turn." },
 };

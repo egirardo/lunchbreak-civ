@@ -22,7 +22,7 @@ export const RULES = {
   cityBaseDefense: 5,
   flankingBonus: 1,
 
-  cultureVictoryThreshold: 20,
+  cultureVictoryThreshold: 25,
 
   score: {
     perCity: 10,
