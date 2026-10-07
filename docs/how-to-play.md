@@ -27,12 +27,12 @@ You start with a **Settler** (founds cities) and a **Warrior** (attacks enemies)
 
 | Unit | What It Does | Cost | Special |
 |---|---|---|---|
-| **Settler** | Founds a new city (consumed) | 30 prod | Moves 2 tiles/turn |
+| **Settler** | Founds a new city (consumed) | 20 prod | Moves 2 tiles/turn |
 | **Warrior** | Attacks enemies | 20 prod | Strength: 5, Moves 2 tiles/turn |
-| **Archer** | Attacks from 2 tiles away | 20 prod | Strength: 7, Ranged attacker |
+| **Archer** | Attacks from 2 tiles away | 20 prod | Strength: 7, Ranged attacker (Unlocked: Archery) |
 | **Horseman** | Fast attacker | 25 prod | Strength: 8, Moves 4 tiles/turn (Unlocked: Horseback Riding) |
 | **Swordsman** | Strong warrior upgrade | — | Strength: 12 (Warriors auto-upgrade with Iron Working) |
-| **Worker** | Builds farms, mines, improvements | 15 prod | Moves 2 tiles/turn, no combat |
+| **Worker** | Builds Farms (+1 food) and Mines (+1 production) on tiles | 15 prod | Moves 2 tiles/turn, no combat, takes 1 turn per improvement |
 
 ---
 
@@ -45,7 +45,9 @@ Cities are the heart of your civilization. Each city:
   - ⚙️ **Production** → builds units and buildings
   - 🔬 **Science** → unlocks new technologies
 - **Builds one item at a time** (a unit or a building)
-- **Has a limit**: you can build `TODO` 4 cities (5 with Civil Service tech)
+- **Has a limit**: you can build 4 cities (5 with Civil Service tech)
+- **Claims territory**: the tiles within 1 tile of the city (2 tiles once it reaches 4 population)
+- **Makes science on its own**: 1 science + 1 per 2 population, plus building bonuses
 
 ### Growing a City
 
@@ -56,7 +58,7 @@ Food accumulates in a city. When it reaches **10 food**, you gain 1 population a
 Click a city to set its **focus**:
 - **Food Focus**: prioritize food tiles (grow population faster)
 - **Production Focus**: prioritize production tiles (build units/buildings faster)
-- **Science Focus**: prioritize science tiles (research techs faster) — only works if you have a Library
+- **Science Focus**: +50% science in this city (research techs faster) — only works if the city has a Library
 
 ---
 
@@ -80,13 +82,16 @@ Attack an enemy unit or city by moving your unit onto theirs (melee) or attackin
 
 **How It Works:**
 - Attacker's **strength** vs Defender's **strength**. Whoever is stronger wins **instantly**.
-- If strengths are tied, the defender wins (attack fails, your unit takes no damage).
+- If strengths are tied, the defender wins and the attacker is removed.
+- **Flanking**: you get **+1 strength** if another of your units is next to the target.
 - The loser is removed from the board. Combat is quick — no damage over multiple rounds.
-- **Archers** can attack from 2 tiles away without moving into melee. Other units must be adjacent.
+- **Archers** can attack from 2 tiles away without moving into melee. If an Archer's ranged attack fails, nothing happens and the Archer survives. Other units must be adjacent.
 
-**Defending a City:**
-- If you attack a city with **Walls**, the city gets a **+50% defense bonus** to its strength (if defending is 5 strength, it becomes 7.5 → 7).
-- Still just one round. Walls make it harder but not impossible to take a city.
+**Attacking and Defending Cities:**
+- A city defends with strength **5**, or with its garrison unit's strength if that is higher.
+- **Walls** give a **+50% defense bonus** (e.g. 5 becomes 7.5 → 7).
+- Win the attack and you **capture** the city, buildings included.
+- Capture an enemy's **capital** and that player is eliminated. Lose your own capital and you're out!
 
 **Tips:**
 - Build stronger units (Swordsmen: 12 vs Warriors: 5 is a huge jump)
@@ -106,7 +111,7 @@ You earn points from:
 | Source | Points |
 |---|---|
 | Each city | 10 points (one-time) |
-| Each population | 1 point per pop (per turn) |
+| Each population | 1 point per pop (counted at the end) |
 | Each tech researched | 5 points per tech |
 | Each tile you control | 1 point per tile |
 | Each Temple | 2 points per turn (keep building them!) |
@@ -118,7 +123,7 @@ You earn points from:
 
 - **Domination**: Capture all enemy capitals. Move a unit onto an enemy's capital city to capture it instantly and eliminate them. First to capture all enemies wins.
 - **Science**: Research all 12 techs. Hard to do in 30 turns, but rewarding if you pull it off.
-- **Culture**: Accumulate 50 Culture points. Temples give 2 Culture per turn, so you need ~5 temples built by turn 15 to win this way. Very expensive!
+- **Culture**: Accumulate 40 Culture points. Temples give 2 Culture per turn (one per city), so 4 temples need about 5 turns. Very expensive!
 
 ---
 

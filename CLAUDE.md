@@ -1,6 +1,6 @@
 # CLAUDE.md — Lunchbreak Civ
 
-> Draft. Items marked `TODO` are decisions for you to make or adjust.
+> All numbers are starting points for playtesting.
 
 ## Project Overview
 
@@ -16,7 +16,10 @@
 
 ## Tech Stack
 
-- Language/framework: TypeScript + Vite, rendering with HTML Canvas or DOM/SVG
+- Language/framework: TypeScript + Vite
+- Rendering: DOM grid of pixel-art sprites (CSS `image-rendering: pixelated`). Chosen over Canvas so the map is screen-reader accessible.
+- Art: pixel art. Prefer existing free-licensed asset packs (CC0 preferred; anything requiring attribution must be credited). If nothing suitable fits, generate simple generic sprites. Keep assets in `public/assets/` and record each source and license in `docs/credits.md`.
+- Audio: sound effects and music generated with the Web Audio API, no external audio files
 - State management approach: a single serializable game-state object plus pure update functions
 - Testing: Vitest for game logic
 - Persistence: localStorage for auto-save (no backend)
@@ -39,7 +42,8 @@ Keep the rules in this section as the **source of truth**. If code and this sect
 
 | Parameter | Value | Notes |
 |---|---|---|
-| Map size | 16 × 12 tiles | `TODO` tune after playtesting |
+| Map size | 16 × 12 tiles | Tune after playtesting |
+| Tile grid | Square | Diagonals count as adjacent (8 neighbours) |
 | Players | 1 human + 2 AI | |
 | Turn limit | 30 | Hard cap; game ends after turn 30 |
 | Target time per turn | ~40 seconds | |
@@ -61,6 +65,12 @@ Only **three** yields, to keep decisions quick:
 | Hills | 0 | 2 | 0 |
 | River (any tile) | +1 Food | — | — |
 | Capital/city tile | — | 1 | 0 |
+| Water | — | — | — |
+| Mountains | — | — | — |
+
+**Terrain movement:** Water and Mountains are impassable and produce nothing; they exist to shape the map. Every passable tile costs 1 movement.
+
+**Base Science:** No terrain yields science. Instead, each city produces **1 Science + 1 per 2 population** (rounded down) every turn, before building bonuses.
 
 **Resource Accumulation:**
 - Cities sum the yields from all their worked tiles each turn and add bonuses from buildings.
@@ -69,9 +79,9 @@ Only **three** yields, to keep decisions quick:
 - **Science**: Accumulates globally for the player. When total science reaches the cost of the current tech, the tech is researched and the pool resets to 0.
 
 **Building Bonuses:**
-- **Library**: +1 Science per turn in city (produced if city has a Library)
+- **Library**: +1 Science per turn in city (+2 once Mathematics is researched)
 - **Workshop**: +2 Production per turn in city
-- **Granary**: +25% Food in city (round down; e.g., if producing 2 food, becomes 2.5 → 2)
+- **Granary**: +1 Food per turn in city
 - **University**: +3 Science per turn in city (stacks with Library)
 - **Walls**: no resource bonus (affects combat only)
 - **Temple**: no resource bonus (affects score/culture only)
@@ -88,12 +98,17 @@ Not implemented. Removed from the game per the design answers above.
 - Population grows when the city accumulates 10 Food (see Resources section above).
 - Max population per city: **6**. Once a city reaches 6 population, food accumulation still happens but produces no more population growth (becomes "food waste").
 
+**Territory & Work Radius:**
+- A city claims all tiles within **1 tile** of it (3×3 area). At **4 population** the radius grows to **2 tiles** (5×5 area).
+- Claimed tiles are the player's territory (counts toward score). Each tile belongs to at most one city; overlapping tiles go to whichever city claimed them first.
+- A city can only work tiles in its own territory. Water and Mountains can be claimed but yield nothing.
+
 **City Tiles & Yields:**
 - Each city automatically works the **best** tiles (those with highest total yields) up to its population cap.
 - **Focus toggle** lets players override auto-selection:
   - **Food Focus**: prioritize food tiles
   - **Production Focus**: prioritize production tiles
-  - **Science Focus**: prioritize science tiles (only if city has Library/University)
+  - **Science Focus**: no tiles yield science, so this instead gives the city +50% Science (rounded down) and works the best balanced tiles. Only available if the city has a Library.
 - If a city has more population than available tiles, the excess workers idle (no penalty, just no extra yield).
 
 **City Buildings:**
@@ -104,42 +119,59 @@ Not implemented. Removed from the game per the design answers above.
 **Building List & Costs:**
 | Building | Unlocked By | Cost (Production) | Effect |
 |---|---|---|---|
-| Granary | Agriculture | 20 | +25% Food in city |
-| Mine (improvement) | Mining | 15 | tile improvement: worker builds this, +1 production to the tile |
+| Granary | Agriculture | 20 | +1 Food per turn in city |
 | Workshop | Engineering | 25 | +2 Production in city |
 | Walls | Bronze Working | 20 | +50% defense bonus when this city is attacked (see Combat) |
-| Library | Writing | 25 | +1 Science per turn in city |
-| Temple | Philosophy | 30 | +2 Culture score per turn, +2 Happiness (slows growth penalty if unhappy `TODO` implement happiness system? Default: no for now, treat this as +2 score only) |
+| Library | Writing | 25 | +1 Science per turn in city (+2 with Mathematics) |
+| Temple | Philosophy | 30 | +2 Culture per turn and +2 score per turn. No happiness system. |
 | University | Education | 40 | +3 Science per turn in city (stacks with Library) |
+
+Each building can be built **once per city**.
+
+**Tile Improvements (built by Workers, not cities):**
+| Improvement | Unlocked By | Effect |
+|---|---|---|
+| Farm | Agriculture | +1 Food on the tile |
+| Mine | Mining | +1 Production on the tile |
+
+A Worker on a tile in its own territory spends 1 turn to build an improvement. One improvement per tile. Improvements cost no production.
 
 **Upkeep:**
 Buildings have **no upkeep cost**. Once built, they produce their bonus for free.
 
 ### Tech Tree
 
-- Small tree: ~12 techs in 3 short branches (Economy, Military, Culture).
+- 12 techs in 3 branches (Economy, Military, Science & Culture). Full list, costs, and prerequisites in `docs/techs.md`.
 - Each tech takes roughly 2–4 turns to research.
-- `TODO` Define the list of techs and what each unlocks in `docs/techs.md`.
+- At game start, the player picks **one free tech** from the three tier-1 techs (Agriculture, Bronze Working, Writing). AI players pick one at random.
+- The whole tree is visible from the start.
 
 ### Units & Combat
 
 **Unit Types:**
-- **Settler**: founds new cities (1 per city founded). Consumed when it founds. Moves 2 tiles/turn. Cost: 30 production.
+- **Settler**: founds new cities (1 per city founded). Consumed when it founds. Moves 2 tiles/turn. Cost: 20 production. Building one does not reduce the city's population.
 - **Warrior**: basic melee unit. Strength: 5. Moves 2 tiles/turn. Cost: 20 production. Upgrades to Swordsman with Iron Working.
-- **Archer**: ranged unit (unlocked: Archery). Strength: 7. Ranged attack (2 tiles away). Moves 2 tiles/turn. Cost: 20 production. **Ranged attack rule**: Archer can attack a unit 2 tiles away without moving into melee. Does not take damage from attacks while in ranged mode (but still damaged if an enemy moves adjacent).
+- **Archer**: ranged unit (unlocked: Archery). Strength: 7. Ranged attack (2 tiles away). Moves 2 tiles/turn. Cost: 20 production. **Ranged attack rule**: Archer can attack a unit or city up to 2 tiles away without moving. If the ranged attack wins, the target is removed; if it loses, nothing happens and the Archer survives. When the Archer is itself attacked, it defends normally with strength 7.
 - **Horseman**: fast melee unit (unlocked: Horseback Riding). Strength: 8. Moves 4 tiles/turn. Cost: 25 production.
-- **Worker/Builder**: gathers resources, builds improvements (e.g. farms, mines). Does not attack. Moves 2 tiles/turn. Multiple can exist. Cost: 15 production. **Worker rules**: Cannot be attacked/captured. Builds one improvement per turn (select a tile, it takes 1 turn to complete).
-- **Swordsman**: upgraded warrior (from Iron Working). Strength: 12. Moves 2 tiles/turn. No separate cost (Warriors auto-upgrade).
+- **Worker/Builder**: builds tile improvements (Farm, Mine). Does not attack. Moves 2 tiles/turn. Multiple can exist. Cost: 15 production. **Worker rules**: Cannot be attacked/captured. Builds one improvement per turn (select a tile, it takes 1 turn to complete).
+- **Swordsman**: upgraded warrior (from Iron Working). Strength: 12. Moves 2 tiles/turn. Existing Warriors auto-upgrade, and the build menu's Warrior entry becomes Swordsman at the same 20 production cost.
 
 **Combat:**
 - One unit per tile, no stacking.
-- Combat is **instant and one-round**: Attacker strength vs defender strength. Attacker wins if strength > defender strength; if tied, defender holds (attack fails). Loser is removed from the board.
+- Combat is **instant and one-round**: Attacker strength vs defender strength. Attacker wins if strength > defender strength; if tied, defender holds (attack fails). Loser is removed from the board. (Exception: a losing ranged attack just fails; see Archer.)
+- **Flanking**: the attacker gets **+1 strength** if at least one other friendly unit is adjacent to the target. This breaks equal-strength stalemates (e.g. Warrior vs Warrior).
 - No damage over time, no retreating. Combat is quick and decisive.
 - No long combat animations.
 
+**Cities in Combat:**
+- A city defends with strength **5**, or with the strength of the unit garrisoned on it if that is higher.
+- **Walls** multiply the city's defending strength by 1.5 (rounded down).
+- If an attack on a city wins, any garrison is removed and the attacker moves in and **captures** the city. Captured cities (with their buildings) change owner.
+- Any city can be captured. Capturing a player's **capital** eliminates that player: all their remaining cities and units are removed.
+
 **Movement & Range:**
 - Each unit has a movement allowance per turn (see unit types above).
-- **Fog of war**: Units can only see 2 tiles in each direction (4-tile radius from the unit). Enemies beyond that are hidden until spotted.
+- **Fog of war**: Units and cities see tiles within a **2-tile radius** (5×5 area). Enemies beyond that are hidden until spotted. Explored terrain stays revealed; enemy units are only shown while in sight.
 - **Enemy territory**: Units can move freely into enemy territory (no walls or borders block movement). However, cities get a defense bonus against attacks.
 - **Attack while moving**: Melee units must be adjacent to attack. Ranged units can attack from 2 tiles away without moving.
 
@@ -151,7 +183,7 @@ The game ends at the turn limit (turn 30) or earlier if someone wins:
 | Category | Points |
 |---|---|
 | Each city founded | 10 points |
-| Each population | 1 point |
+| Each population | 1 point (counted at end of game) |
 | Each tech researched | 5 points |
 | Each tile in your territory | 1 point |
 | Each Temple building | 2 points per turn (cumulative; e.g., 2 temples by turn 20 = 40 points) |
@@ -167,14 +199,16 @@ The game ends at the turn limit (turn 30) or earlier if someone wins:
 - (This is challenging in 30 turns and meant to be a high-risk, high-reward strategy.)
 
 **Culture Victory (Instant Win):**
-- Temples provide 2 Culture per turn. Accumulate **50 Culture** to win instantly.
-- (Requires ~5 temples by turn 15, which is expensive; meant to be a specialist win strategy.)
+- Temples provide 2 Culture per turn (one Temple per city). Culture accumulates per player. Accumulate **40 Culture** to win instantly.
+- (e.g. 4 temples running for 5 turns. Meant to be a specialist win strategy. Threshold to be tuned in playtesting.)
 
 ### AI Opponents
 
 - AI turns must resolve in **under 1 second**.
 - AI should be simple and predictable: expand, research, build military, attack the weakest neighbor.
 - Difficulty levels Easy / Normal only.
+  - **Normal**: standard rules.
+  - **Easy**: AI production is reduced by 25% (rounded down), and the AI does not attack before turn 10.
 
 ## Architecture
 
@@ -240,7 +274,7 @@ This game is meant to stay small. When suggesting or implementing features, **pu
 
 ### Why Playtesting Matters
 
-**All the numbers above are educated guesses.** They need to be validated by actual play. A value that looks right on paper (`TODO` e.g., "a Warrior costs 20 production") might feel wrong once you're playing:
+**All the numbers above are educated guesses.** They need to be validated by actual play. A value that looks right on paper (e.g., "a Warrior costs 20 production") might feel wrong once you're playing:
 - Too expensive → players never build units and military becomes irrelevant
 - Too cheap → players spam units and run out of meaningful decisions
 - Too slow to research → players get bored waiting
@@ -283,7 +317,7 @@ This game is meant to stay small. When suggesting or implementing features, **pu
 
 ### Documentation
 
-- Log turn-by-turn timing and final time in playtest notes (`docs/balance.md`).
+- Log turn-by-turn timing and final time in playtest notes (`docs/balance.md`, created when playtesting starts).
 - Record each balance change with a reason and the playtests that motivated it.
 - Include post-playtest notes: "felt good", "felt too slow", "military was OP", etc.
 - Every balance change should be **traceable back to a playtest observation**.
@@ -306,7 +340,7 @@ This game is meant to stay small. When suggesting or implementing features, **pu
 - Name the civilizations and leaders (or keep them generic?)
 
 ## Answers to Open Questions
-- Art style: pixel art
-- There should be sound and music
+- Art style: pixel art, using existing free-licensed assets where possible, otherwise generated generic sprites (see Tech Stack)
+- There should be sound and music, generated with the Web Audio API
 - Single-player only
 - Keep generic names

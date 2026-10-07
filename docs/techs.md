@@ -1,6 +1,6 @@
 # Tech Tree — Lunchbreak Civ
 
-> Draft. Place at `docs/techs.md`. Items marked `TODO` are for you to decide. All numbers are starting points for playtesting.
+> All numbers are starting points for playtesting.
 
 ## Quick Primer: How Tech Trees Work in Civ
 
@@ -42,7 +42,7 @@ Cross-branch links:
 
 | # | Tech | Branch | Tier | Cost | Requires | Unlocks |
 |---|------|--------|------|------|----------|---------|
-| 1 | Agriculture | Economy | 1 | 10 | none | **Farm** tile improvement (+1 food), **Granary** (faster city growth) |
+| 1 | Agriculture | Economy | 1 | 10 | none | **Farm** tile improvement (+1 food), **Granary** (+1 food in city) |
 | 2 | Mining | Economy | 2 | 20 | Agriculture | **Mine** tile improvement (+1 production) |
 | 3 | Engineering | Economy | 3 | 30 | Mining | **Workshop** building (+production in city) |
 | 4 | Civil Service | Economy | 4 | 40 | Engineering, Writing | +1 city limit (5 instead of 4) |
@@ -52,7 +52,7 @@ Cross-branch links:
 | 8 | Iron Working | Military | 4 | 40 | Horseback Riding, Mining | Warriors upgrade to **Swordsmen** (big combat boost) |
 | 9 | Writing | Science & Culture | 1 | 10 | none | **Library** building (+science in city) |
 | 10 | Mathematics | Science & Culture | 2 | 20 | Writing | Libraries give +1 extra science |
-| 11 | Philosophy | Science & Culture | 3 | 30 | Mathematics | **Temple** building (+score/culture, small happiness or growth bonus `TODO`) |
+| 11 | Philosophy | Science & Culture | 3 | 30 | Mathematics | **Temple** building (+2 culture and +2 score per turn) |
 | 12 | Education | Science & Culture | 4 | 40 | Philosophy, Engineering | **University** building (large science boost) |
 
 **Total cost if you researched everything:** 300 science.
@@ -65,7 +65,11 @@ Cross-branch links:
 
 **Buildings:** Granary, Workshop, Walls, Library, Temple, University
 
-`TODO` Decide building costs (suggested: 20–60 production) and whether buildings have upkeep (suggested: no).
+**Tile improvements (built by Workers):** Farm (Agriculture), Mine (Mining)
+
+Building costs are listed in CLAUDE.md (20–40 production). Buildings have no upkeep, and each can be built once per city.
+
+**Base science:** each city produces 1 science + 1 per 2 population, before Library/University bonuses.
 
 ## Balance Targets
 
@@ -127,13 +131,13 @@ export const TECHS: Tech[] = [
 
 ## Open Questions
 
-- `TODO` Should players start with one free tech (e.g. Agriculture) to avoid a slow first few turns?
-- `TODO` Should there be a "boost" mechanic (e.g. building a Farm makes Mining cheaper) to add flavor without adding complexity? Default: no.
-- `TODO` Should the tree be visible in full from the start, or only show techs whose prerequisites are researched? (Suggested: show everything, since it helps planning in a short game.)
-- `TODO` Theme names: keep the classic Civ names, or rename for your own setting?
+- Should players start with one free tech (e.g. Agriculture) to avoid a slow first few turns?
+- Should there be a "boost" mechanic (e.g. building a Farm makes Mining cheaper) to add flavor without adding complexity? Default: no.
+- Should the tree be visible in full from the start, or only show techs whose prerequisites are researched? (Suggested: show everything, since it helps planning in a short game.)
+- Theme names: keep the classic Civ names, or rename for your own setting?
 
 ## Answers to Open Questions
-- Players should start with one free tech that they choose from a list of options
+- Players start with one free tech, chosen from the three tier-1 techs (Agriculture, Bronze Working, Writing). AI picks randomly.
 - No boost mechanic
 - Show everything.
 - Keep the classic Civ names
