@@ -1,2 +1,5 @@
-const app = document.querySelector<HTMLDivElement>("#app");
-if (app) app.textContent = "Lunchbreak Civ — UI coming soon.";
+import "./ui/styles.css";
+import { App } from "./ui/app";
+
+const root = document.querySelector<HTMLElement>("#app");
+if (root) new App(root);
