@@ -1131,7 +1131,9 @@ table.legend td {
   font-size: 1.15rem;
 }
 
-.legend-sprite {
+/* Map sprites are display:block; in the legend they must be inline so the cell can centre them. */
+.legend-sym .legend-sprite {
+  display: inline-block;
   width: 32px;
   height: 32px;
   image-rendering: pixelated;
@@ -1141,6 +1143,7 @@ table.legend td {
 .legend-badge {
   position: static;
   display: inline-block;
+  vertical-align: middle;
 }
 
 /* Small replicas of map tiles so the legend shows exactly what the map shows. */
