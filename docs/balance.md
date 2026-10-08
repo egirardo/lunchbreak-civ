@@ -25,6 +25,29 @@ The end screen records these automatically. Use **Copy summary** and paste the t
 
 **Follow-up:** check in the next playtests whether early domination keeps happening. If it does, candidate fixes are a higher city base defense (5 → 6), a stronger capital, or AIs keeping a second defender in the capital. Each should be tested in simulation first.
 
+### Playtest 2 — 2026-10-08
+
+| Measure | Result |
+|---|---|
+| Difficulty | Easy |
+| Total time | **19:55** (avg 40s per turn) |
+| Turn the game ended | 30 (went the full length) |
+| Ending | **Defeat on score**: 105 vs Golden Union 109 (Crimson Dominion 99) |
+| Cities | 3 (2 founded, 1 captured, 0 lost) |
+| Techs | 5 of 12 (AIs: 7 and 8) |
+| Units | 5 built, 2 lost; battles 3 won, 2 lost |
+| Buildings | 1 |
+| Culture | 0 |
+
+**Notes:** No written impressions yet. Stats came from the end-screen summary.
+
+**Observations:**
+- **Pacing is on target.** 19:55 total and 40s per turn match the 20-minute / 40-second design goals exactly.
+- **A close finish.** All three scores ended within 10 points, which suggests the score race is competitive rather than a runaway.
+- **Low tech count.** The player researched 5 techs against a target of 8–9; the Easy AIs got 7–8. Possible causes are fewer Libraries (1 building total), turns with no research chosen, or military spending. Watch this in future playtests before tuning science.
+- **Easy may be harder than simulations suggest.** In simulation the AI-played human seat won 5 of 6 Easy games; here a human lost narrowly. One game isn't enough to act on.
+- **Playtest 1's early-rush concern didn't recur.** One city was captured, but no rival was eliminated and the game went to turn 30.
+
 ## Changes
 
 ### 2026-10-07 — Culture threshold 20 → 25, Temple cost 30 → 40
