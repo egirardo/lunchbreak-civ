@@ -167,6 +167,7 @@ Buildings have **no upkeep cost**. Once built, they produce their bonus for free
 **Cities in Combat:**
 - A city defends with strength **5**, or with the strength of the unit garrisoned on it if that is higher.
 - **Walls** multiply the city's defending strength by 1.5 (rounded down).
+- A city with a **military unit inside** gets **+1 defense**, added after Walls (Workers and Settlers don't count). E.g. Warrior garrison: 6; with Walls: 8.
 - If an attack on a city wins, any garrison is removed and the attacker moves in and **captures** the city. Captured cities (with their buildings) change owner.
 - Any city can be captured. Capturing a player's **capital** eliminates that player: all their remaining cities and units are removed.
 

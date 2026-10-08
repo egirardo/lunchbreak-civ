@@ -5,6 +5,7 @@ import { endTurn } from "./game";
 import {
   attackTargets,
   cityYields,
+  combatPreview,
   computeScore,
   defenseStrength,
   reachableTiles,
@@ -245,14 +246,34 @@ describe("combat", () => {
     expect(attackTargets(s, w)).toEqual([]);
   });
 
-  it("cities defend at 5 or the garrison's strength, and walls add 50%", () => {
+  it("cities defend at 5 or the garrison's strength, walls add 50%, and a military garrison adds +1 after walls", () => {
     const s = makeState();
     const c = addCity(s, 1, 4, 4);
     expect(defenseStrength(s, c)).toBe(5);
     c.buildings.push("walls");
     expect(defenseStrength(s, c)).toBe(7);
     addUnit(s, "archer", 1, 4, 4);
-    expect(defenseStrength(s, c)).toBe(10);
+    expect(defenseStrength(s, c)).toBe(11); // floor(7 * 1.5) + 1
+  });
+
+  it("a garrisoned city holds against two flanking Warriors, but a flanking Horseman takes a walled one", () => {
+    const s = makeState();
+    const c = addCity(s, 1, 4, 4);
+    addUnit(s, "warrior", 1, 4, 4);
+    const w = addUnit(s, "warrior", 0, 3, 3);
+    addUnit(s, "warrior", 0, 5, 3);
+    expect(combatPreview(s, w, c)).toMatchObject({ attack: 6, defense: 6, attackerWins: false });
+
+    c.buildings.push("walls");
+    const h = addUnit(s, "horseman", 0, 3, 4);
+    expect(combatPreview(s, h, c)).toMatchObject({ attack: 9, defense: 8, attackerWins: true });
+  });
+
+  it("workers inside a city don't count as a garrison", () => {
+    const s = makeState();
+    const c = addCity(s, 1, 4, 4);
+    addUnit(s, "worker", 1, 4, 4);
+    expect(defenseStrength(s, c)).toBe(5);
   });
 
   it("capturing a capital eliminates that player; the last player standing wins by domination", () => {

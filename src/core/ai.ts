@@ -37,7 +37,7 @@ const LAST_SETTLER_TURN = 20;
 const STANDING_ARMY_TURN = 5;
 /** How many turns an attack on us is remembered when choosing whom to fight. */
 const GRUDGE_TURNS = 6;
-/** Capital walls go up from this turn; a city's garrison alone doesn't raise its defense above 5. */
+/** Capital walls go up from this turn, before rivals can field Horsemen. */
 const CAPITAL_WALLS_TURN = 6;
 /** Chance that a given AI plays for a culture victory this game. */
 const CULTURE_STRATEGY_CHANCE = 0.35;

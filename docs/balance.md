@@ -112,6 +112,26 @@ The end screen records these automatically. Use **Copy summary** and paste the t
 
 ## Changes
 
+### 2026-10-08 — Garrisoned cities get +1 defense (after Walls)
+
+**Why:** In Playtest 4 the player won by domination on turn 26 without losing a unit. They took one capital early with two Warriors (flanked 6 vs an unwalled 5) and the other with a Horseman (flanked 9 vs walled 7). A garrison replaced the city's base defense of 5 instead of adding to it, so a Warrior defender added nothing.
+
+**Test:** a scripted "capital hunter" that plays like Playtest 4: an early two-Warrior raid on the nearest capital, then a beeline to Horsemen. 40 seeds per row.
+
+| Normal | Before | Capital +2 | Garrison +2 | **Garrison +1 after Walls (chosen)** | Capital +1 after Walls |
+|---|---|---|---|---|---|
+| Capital hunter wins | 80% | 30% | 25% | **50%** | 58% |
+| …by domination | 78% | 3% | 3% | **38%** | 43% |
+| First capital falls (share of games) | turn 18 (85%) | turn 29 (15%) | turn 29 (13%) | **turn 26 (65%)** | turn 26 (65%) |
+| AI-only games: culture endings / AI cities | 12 / 2.8 | 12 / 2.8 | 12 / 2.7 | **12 / 2.7** | 12 / 2.8 |
+
+The +2 versions were applied before Walls, which multiplied them to +3 and put walled cities out of reach of Horsemen, so domination became nearly impossible. An AI-only fix couldn't work either: a walled city tops out at 7, while a flanked Horseman hits 9.
+
+**Change:** `RULES.garrisonDefenseBonus = 1`. A city with a military unit inside gets +1 defense, added after Walls. Two flanking Warriors (6) now fail against a Warrior-garrisoned city (6). A flanking Horseman (9) still takes a walled, garrisoned city (8). Domination is still a real strategy but no longer near-automatic, and ordinary games are unaffected.
+
+**Follow-up for playtests:** does early conquest still feel possible with Horsemen? Do defenders now feel worthwhile? On Easy the capital hunter also wins about 53%, about the same as Normal, so watch whether Easy feels different enough for aggressive players.
+
+
 ### 2026-10-08 — AI defends itself and retaliates (AI behaviour only, no rule changes)
 
 **Why:** In Playtest 3 the player said the AIs "didn't push back much". Simulation confirmed it: against an aggressive player on Normal, the player won 63% and 28% of AIs were eliminated (see Playtest 3).

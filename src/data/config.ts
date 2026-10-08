@@ -20,6 +20,8 @@ export const RULES = {
   visionRadius: 2,
 
   cityBaseDefense: 5,
+  /** Added after Walls when a military unit is inside, so a defender actually helps. */
+  garrisonDefenseBonus: 1,
   flankingBonus: 1,
 
   cultureVictoryThreshold: 25,

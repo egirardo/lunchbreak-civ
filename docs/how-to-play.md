@@ -90,6 +90,7 @@ Attack an enemy unit or city by moving your unit onto theirs (melee) or attackin
 **Attacking and Defending Cities:**
 - A city defends with strength **5**, or with its garrison unit's strength if that is higher.
 - **Walls** give a **+50% defense bonus** (e.g. 5 becomes 7.5 → 7).
+- A **military unit inside** the city adds **+1** on top (e.g. a Warrior inside a walled city: 7 + 1 = 8). Keep a defender in your capital!
 - Win the attack and you **capture** the city, buildings included.
 - Capture an enemy's **capital** and that player is eliminated. Lose your own capital and you're out!
 

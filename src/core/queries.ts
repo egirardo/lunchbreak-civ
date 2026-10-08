@@ -250,9 +250,11 @@ export function defenseStrength(s: GameState, target: Point): number {
   const city = cityAt(s, target.x, target.y);
   const unitStrength = unit ? UNITS[unit.type].strength : 0;
   if (!city) return unitStrength;
+  const garrisoned = unit !== undefined && UNITS[unit.type].attack !== "none";
   const base = Math.max(RULES.cityBaseDefense, unitStrength);
   const multiplier = city.buildings.reduce((m, b) => m * BUILDINGS[b].defenseMultiplier, 1);
-  return Math.floor(base * multiplier);
+  // The garrison bonus is added after Walls so it isn't multiplied.
+  return Math.floor(base * multiplier) + (garrisoned ? RULES.garrisonDefenseBonus : 0);
 }
 
 export interface CombatPreview {
