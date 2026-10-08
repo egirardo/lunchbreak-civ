@@ -97,3 +97,7 @@ All numbers are starting points that get tuned through playtesting and simulatio
 ## Credits
 
 All art is original and released under CC0, and all audio is synthesized at runtime. See [`docs/credits.md`](docs/credits.md).
+
+## License
+
+[MIT](LICENSE) © 2026 Elsa Girardo. The pixel art is additionally released under CC0 (see credits).
