@@ -70,6 +70,22 @@ The end screen records these automatically. Use **Copy summary** and paste the t
 - **Techs are low in every human game, for the AIs too.** The player got 5 and 6 techs in Playtests 2–3; here the AIs got 6–7, versus about 8 in AI-only simulations. Human games seem to run lower on science. Possible causes: more warfare disrupting AI cities, or less science-focused play. Worth one simulation comparing AI science when the human seat plays aggressively.
 - **More buildings than Playtest 2** (3 vs 1) with the new UI, consistent with cities being easier to manage now.
 
+**Follow-up simulation (player reported "the AIs didn't push back much"):** 40 seeds per row. Your seat was played either by the standard AI or by a scripted aggressive player that expands to about 3 cities, keeps building military, and marches spare units at the nearest rival city, attacking only with winning odds.
+
+| Difficulty / your seat | You win | AI cities (on 1 city) | AI techs | AIs eliminated | AI attacks on you per game | AI army size at turn 15 |
+|---|---|---|---|---|---|---|
+| Normal / standard | 38% | 2.8 (9%) | 8.0 | 1% | 1.3 | 1.4 |
+| **Normal / aggressive** | **63%** | **1.8 (40%)** | **6.9** | **28%** | 2.8 | 1.4 |
+| Easy / standard | 63% | 2.1 (14%) | 7.1 | 4% | 0.7 | 1.1 |
+| Easy / aggressive | 93% | 1.0 (68%) | 6.0 | 44% | 1.2 | 1.3 |
+
+**Conclusions:**
+- **The AI is too passive.** Against aggression on Normal it averages about 1.4 military units at turn 15, roughly one garrison per city, and only 2.8 attacks on the player in a whole game. It loses cities instead of fighting back.
+- **Playtest 3 matches the aggressive-player profile.** AIs held to 1 city and 6–7 techs.
+- **Low AI tech is a consequence of losing cities**, not a science-cost problem: 8.0 techs normally vs 6.9 under pressure.
+- **Low human tech in Playtests 2–3 is a play-style effect.** The scripted aggressive player still reached 8.3 techs, so the science costs themselves aren't the cause. Don't tune science costs for this.
+
+
 ## Changes
 
 ### 2026-10-07 — Culture threshold 20 → 25, Temple cost 30 → 40
