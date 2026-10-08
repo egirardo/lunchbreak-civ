@@ -86,6 +86,30 @@ The end screen records these automatically. Use **Copy summary** and paste the t
 - **Low human tech in Playtests 2–3 is a play-style effect.** The scripted aggressive player still reached 8.3 techs, so the science costs themselves aren't the cause. Don't tune science costs for this.
 
 
+### Playtest 4 — 2026-10-08
+
+| Measure | Result |
+|---|---|
+| Difficulty | Normal |
+| Total time | **15:34** (avg 36s per turn) |
+| Turn the game ended | **26** (early domination) |
+| Ending | **Domination victory**: both rivals eliminated |
+| Cities | 4 (2 founded, 2 captured, 0 lost) |
+| Techs | 7 of 12 |
+| Units | 9 built, **0 lost**; battles **3 won, 0 lost** |
+| Buildings | 3 |
+| Culture | 0 |
+
+**Notes:** First game after the AI defence update (AIs research Bronze Working early, wall their capital from turn 6, and retaliate). Earlier in the game the player asked why three Warriors surrounding a city only gave +1 flanking. Flanking is a flat +1, so Warriors can't take a walled city (6 vs 7).
+
+**Observations:**
+- **Domination took only 3 battles.** Both rivals were eliminated with no units lost, so each capital fell to a single successful attack. Because losing the capital eliminates a player outright, one good attack per rival is enough to win the game.
+- **The AI never pushed back.** Zero player losses, despite the new war mode and retaliation.
+- **It beat the scripted aggressor by a wide margin.** In simulation, the aggressive player only won by domination in 2 of 40 Normal games after the AI update. The scripted aggressor marches at the *nearest* city with whatever units it has; a human picks the capital and brings units that beat Walls (Archers 8, Horsemen 9 with flanking). The simulation probably understates how exposed capitals are.
+- **Shorter game.** 15:34, under the 18–22 minute target, because it ended on turn 26.
+
+**Candidate fixes (not yet decided or tested):** make capitals sturdier (higher base defense, or a defence bonus from the garrison), keep a second AI defender next to the capital, or make capital capture less decisive (e.g. a player is only eliminated after losing all cities). Test each against a smarter "capital-hunting" scripted player first.
+
 ## Changes
 
 ### 2026-10-08 — AI defends itself and retaliates (AI behaviour only, no rule changes)
