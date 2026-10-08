@@ -41,6 +41,7 @@ import {
   type PlayerId,
   type Unit,
   type VictoryType,
+  emptyStats,
 } from "./state";
 
 // ---------- helpers ----------
@@ -170,6 +171,7 @@ export function newGame({ seed, difficulty }: NewGameOptions): GameState {
       bonusScore: 0,
       explored: new Array<boolean>(size.width * size.height).fill(false),
       citiesFounded: 0,
+      stats: emptyStats(),
     };
   });
 
@@ -344,6 +346,10 @@ export function attack(state: GameState, unitId: number, target: Point): AttackR
 
   a.movesLeft = 0;
   a.hasAttacked = true;
+  recordBattle(s, a.owner, defenderOwner, preview.attackerWins, {
+    attackerLostUnit: !preview.attackerWins && !ranged,
+    defenderLostUnit: preview.attackerWins && defenderUnit !== undefined,
+  });
 
   if (preview.attackerWins) {
     if (defenderUnit) s.units = s.units.filter((u) => u.id !== defenderUnit.id);
@@ -368,6 +374,26 @@ export function attack(state: GameState, unitId: number, target: Point): AttackR
   return { state: s, attackerWon: preview.attackerWins, attack: preview.attack, defense: preview.defense, capturedCityId };
 }
 
+function recordBattle(
+  s: GameState,
+  attacker: PlayerId,
+  defender: PlayerId | null,
+  attackerWon: boolean,
+  losses: { attackerLostUnit: boolean; defenderLostUnit: boolean },
+): void {
+  const a = getPlayer(s, attacker).stats;
+  const d = defender !== null ? getPlayer(s, defender).stats : null;
+  if (attackerWon) {
+    a.battlesWon++;
+    if (d) d.battlesLost++;
+  } else {
+    a.battlesLost++;
+    if (d) d.battlesWon++;
+  }
+  if (losses.attackerLostUnit) a.unitsLost++;
+  if (losses.defenderLostUnit && d) d.unitsLost++;
+}
+
 function captureCity(s: GameState, city: City, newOwner: PlayerId): void {
   const oldOwner = city.owner;
   const wasCapital = city.isCapital;
@@ -376,6 +402,8 @@ function captureCity(s: GameState, city: City, newOwner: PlayerId): void {
 
   city.owner = newOwner;
   city.isCapital = false;
+  getPlayer(s, newOwner).stats.citiesCaptured++;
+  getPlayer(s, oldOwner).stats.citiesLost++;
   if (city.current && !isItemBuildable(s, city, city.current)) city.current = null;
   for (const t of s.tiles) {
     if (t.cityId === city.id) t.owner = newOwner;
@@ -459,10 +487,13 @@ function processCity(s: GameState, city: City): void {
       let built = true;
       if (item.kind === "unit") {
         const spot = freeTileNear(s, city);
-        if (spot) spawnUnit(s, item.id, city.owner, spot);
-        else built = false; // no room: hold the production until a tile frees up
+        if (spot) {
+          spawnUnit(s, item.id, city.owner, spot);
+          owner.stats.unitsBuilt++;
+        } else built = false; // no room: hold the production until a tile frees up
       } else {
         city.buildings.push(item.id);
+        owner.stats.buildingsBuilt++;
       }
       if (built) {
         city.production -= cost;

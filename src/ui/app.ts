@@ -28,6 +28,7 @@ import type { ImprovementId } from "../data/improvements";
 import type { TechId } from "../data/techs";
 import type { UnitTypeId } from "../data/units";
 import { clearSave, loadGame, saveGame } from "../storage/save";
+import { gameSummaryText } from "./summary";
 import { isMusicEnabled, isMuted, playSfx, setMusicEnabled, setMuted, startMusic, stopMusic, unlockAudio, type SfxName } from "./audio";
 import { minutesLabel } from "./format";
 import { renderMap, tileId, type MapContext } from "./mapView";
@@ -35,6 +36,7 @@ import { renderModal, renderSidebar, renderTopbar } from "./panels";
 import { initialUiState, type Modal, type UiState } from "./uiState";
 
 const TARGET_SECONDS_PER_TURN = 40;
+const MAX_COUNTED_TURN_SECONDS = 300;
 const STACKED_MODALS: Modal[] = ["help", "tech"];
 
 function eventKey(e: GameEvent): string {
@@ -49,6 +51,9 @@ export class App {
   private state: GameState | null = null;
   private ui: UiState;
   private turnStartedAt = Date.now();
+  /** Banked active play time from completed turns (and turns saved on page hide). */
+  private playSeconds = 0;
+  private hiddenAt: number | null = null;
   private turnDurations: number[] = [];
   private audioUnlocked = false;
   private lastModal: Modal = null;
@@ -103,6 +108,19 @@ export class App {
     };
     document.addEventListener("pointerdown", unlock, { capture: true });
     document.addEventListener("keydown", unlock, { capture: true });
+    // Time with the tab hidden doesn't count as play time (lunch gets interrupted).
+    document.addEventListener("visibilitychange", () => {
+      if (document.hidden) this.hiddenAt = Date.now();
+      else if (this.hiddenAt !== null) {
+        this.turnStartedAt += Date.now() - this.hiddenAt;
+        this.hiddenAt = null;
+      }
+    });
+    window.addEventListener("pagehide", () => {
+      if (this.state?.phase !== "playing") return;
+      this.bankTurnTime();
+      this.commit(this.state);
+    });
     window.setInterval(() => {
       if (this.state && this.ui.modal === null) this.renderTopbarOnly();
     }, 10_000);
@@ -200,6 +218,18 @@ export class App {
     if (focusKey) document.querySelector<HTMLElement>(`[data-focus-key="${CSS.escape(focusKey)}"]`)?.focus();
   }
 
+  private copySummary(): void {
+    if (!this.state) return;
+    const text = gameSummaryText(this.state, this.ui.playSeconds);
+    const done = (ok: boolean): void => {
+      this.ui.summaryCopied = ok;
+      this.announce(ok ? "Summary copied to the clipboard." : "Couldn't copy. Select the summary text below instead.");
+      this.render();
+    };
+    if (!navigator.clipboard) return done(false);
+    navigator.clipboard.writeText(text).then(() => done(true), () => done(false));
+  }
+
   private announce(text: string): void {
     this.live.textContent = "";
     window.setTimeout(() => {
@@ -231,11 +261,24 @@ export class App {
     }
   }
 
+  /** Seconds spent on the current turn, capped so a long idle break doesn't inflate play time. */
+  private turnElapsed(): number {
+    const end = this.hiddenAt ?? Date.now();
+    return Math.min(Math.max(0, (end - this.turnStartedAt) / 1000), MAX_COUNTED_TURN_SECONDS);
+  }
+
+  private bankTurnTime(): number {
+    const seconds = this.turnElapsed();
+    this.playSeconds += seconds;
+    this.turnStartedAt = this.hiddenAt ?? Date.now();
+    return seconds;
+  }
+
   private commit(next: GameState): void {
     this.state = next;
     try {
       if (next.phase === "ended") clearSave();
-      else saveGame(next);
+      else saveGame(next, this.playSeconds);
     } catch {
       // Storage can be unavailable (private mode, quota); the game still works without saving.
     }
@@ -277,6 +320,9 @@ export class App {
     this.ui.modal = "end";
     this.ui.selectedUnitId = null;
     this.ui.selectedCityId = null;
+    this.bankTurnTime();
+    this.ui.playSeconds = this.playSeconds;
+    this.ui.summaryCopied = false;
     const won = s.winner === HUMAN_PLAYER;
     this.sfx(won ? "victory" : "defeat");
     stopMusic();
@@ -290,6 +336,8 @@ export class App {
     const seed = Math.floor(Math.random() * 2 ** 31);
     this.state = newGame({ seed, difficulty: this.ui.difficulty });
     this.turnDurations = [];
+    this.playSeconds = 0;
+    this.turnStartedAt = Date.now();
     this.ui.modal = "chooseTech";
     this.ui.lastTurnEvents = [];
     this.ui.selectedCityId = null;
@@ -307,6 +355,8 @@ export class App {
     this.state = data.state;
     this.ui.savedAt = data.savedAt;
     this.turnDurations = [];
+    this.playSeconds = data.playSeconds;
+    this.ui.playSeconds = data.playSeconds;
     const s = data.state;
     this.ui.awayEvents = s.events.filter((e) => e.turn >= s.turn - 1 && e.involves.includes(HUMAN_PLAYER));
     this.ui.lastTurnEvents = [];
@@ -430,7 +480,7 @@ export class App {
     const lastBefore = s.events[s.events.length - 1];
     const before = s.turn;
     const next = endTurn(s);
-    this.turnDurations.push((Date.now() - this.turnStartedAt) / 1000);
+    this.turnDurations.push(this.bankTurnTime());
     let start = 0;
     if (lastBefore) {
       const key = eventKey(lastBefore);
@@ -583,6 +633,9 @@ export class App {
         setMusicEnabled(!isMusicEnabled());
         if (isMusicEnabled()) startMusic();
         else stopMusic();
+        break;
+      case "copy-summary":
+        this.copySummary();
         break;
       case "play-again":
         this.state = null;

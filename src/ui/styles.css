@@ -885,3 +885,53 @@ kbd {
   color: #ffd166;
   font-weight: bold;
 }
+
+.end-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 0.4rem;
+}
+
+.stat-card {
+  display: flex;
+  flex-direction: column;
+  background: var(--panel-2);
+  border: 2px solid #000;
+  padding: 0.4rem 0.6rem;
+}
+
+.stat-value {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: var(--accent);
+}
+
+.stat-value small {
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+
+.stat-label {
+  font-size: 0.85rem;
+}
+
+.stat-detail {
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+
+.summary-text {
+  margin-top: 0.6rem;
+}
+
+.summary-text textarea {
+  width: 100%;
+  margin-top: 0.3rem;
+  font: inherit;
+  font-size: 0.8rem;
+  color: var(--text);
+  background: #0006;
+  border: 1px solid var(--border);
+  padding: 0.4rem;
+  resize: vertical;
+}

@@ -6,6 +6,8 @@ Every balance change, with the observation that motivated it and before/after nu
 
 For each playtest, record: date, difficulty, total time, average seconds per turn, techs researched, cities founded, how the game ended, and qualitative notes. Mark anything not measured as unknown.
 
+The end screen records these automatically. Use **Copy summary** and paste the text, plus your impressions, into a new entry. Play time excludes time with the tab hidden and caps each turn at 5 minutes.
+
 ### Playtest 1 — 2026-10-08
 
 | Measure | Result |

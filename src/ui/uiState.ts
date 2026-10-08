@@ -23,6 +23,9 @@ export interface UiState {
   awayEvents: GameEvent[];
   savedAt: number | null;
   hasSave: boolean;
+  /** Active play time, shown on the end screen. */
+  playSeconds: number;
+  summaryCopied: boolean;
 }
 
 export function initialUiState(hasSave: boolean): UiState {
@@ -39,5 +42,7 @@ export function initialUiState(hasSave: boolean): UiState {
     awayEvents: [],
     savedAt: null,
     hasSave,
+    playSeconds: 0,
+    summaryCopied: false,
   };
 }

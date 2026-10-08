@@ -2,7 +2,7 @@ import type { TerrainId } from "../data/terrain";
 import type { TechId } from "../data/techs";
 import type { UnitTypeId } from "../data/units";
 import { UNITS } from "../data/units";
-import { STATE_VERSION, type City, type GameState, type Player, type Unit } from "./state";
+import { STATE_VERSION, emptyStats, type City, type GameState, type Player, type Unit } from "./state";
 
 export function makeState(opts: { width?: number; height?: number; players?: number; terrain?: TerrainId } = {}): GameState {
   const width = opts.width ?? 8;
@@ -22,6 +22,7 @@ export function makeState(opts: { width?: number; height?: number; players?: num
     bonusScore: 0,
     explored: new Array<boolean>(width * height).fill(false),
     citiesFounded: 0,
+    stats: emptyStats(),
   }));
   return {
     version: STATE_VERSION,

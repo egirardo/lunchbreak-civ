@@ -383,6 +383,44 @@ describe("victory and scoring", () => {
   });
 });
 
+describe("player stats", () => {
+  it("count units and buildings built", () => {
+    const s = makeState();
+    giveTechs(s, 0, ["agriculture"]);
+    const c = addCity(s, 0, 4, 4, { production: 20, current: { kind: "unit", id: "warrior" } });
+    const one = processEndOfRound(s);
+    expect(one.players[0]?.stats.unitsBuilt).toBe(1);
+    const two = processEndOfRound(setProduction({ ...one, cities: one.cities.map((x) => ({ ...x, production: 20 })) }, c.id, { kind: "building", id: "granary" }));
+    expect(two.players[0]?.stats.buildingsBuilt).toBe(1);
+  });
+
+  it("count battles and losses on both sides", () => {
+    const s = makeState();
+    const a = addUnit(s, "warrior", 0, 2, 2);
+    addUnit(s, "warrior", 1, 3, 2);
+    const lost = attack(s, a.id, { x: 3, y: 2 }).state;
+    expect(lost.players[0]?.stats).toMatchObject({ battlesLost: 1, unitsLost: 1, battlesWon: 0 });
+    expect(lost.players[1]?.stats).toMatchObject({ battlesWon: 1, unitsLost: 0 });
+
+    const archerState = makeState();
+    const archer = addUnit(archerState, "archer", 0, 1, 1);
+    addUnit(archerState, "horseman", 1, 3, 3);
+    const failed = attack(archerState, archer.id, { x: 3, y: 3 }).state;
+    expect(failed.players[0]?.stats).toMatchObject({ battlesLost: 1, unitsLost: 0 });
+  });
+
+  it("count captured and lost cities", () => {
+    const s = makeState();
+    addCity(s, 1, 4, 4);
+    addCity(s, 1, 7, 7, { isCapital: false });
+    addCity(s, 2, 0, 7);
+    const h = addUnit(s, "horseman", 0, 6, 6);
+    const r = attack(s, h.id, { x: 7, y: 7 }).state;
+    expect(r.players[0]?.stats).toMatchObject({ citiesCaptured: 1, battlesWon: 1 });
+    expect(r.players[1]?.stats).toMatchObject({ citiesLost: 1, battlesLost: 1 });
+  });
+});
+
 describe("turn flow", () => {
   it("endTurn runs the AIs, advances the turn, and restores moves", () => {
     const s = chooseStartingTech(newGame({ seed: 3, difficulty: "normal" }), "agriculture");

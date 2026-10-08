@@ -30,6 +30,7 @@ import { HUMAN_PLAYER, type BuildItem, type City, type CityFocus, type GameEvent
 import { isMusicEnabled, isMuted } from "./audio";
 import { esc, plural, turnsLabel, turnsToComplete } from "./format";
 import { BUILDING_GLYPH, ICON, UNIT_GLYPH, icon, sprite } from "./glyphs";
+import { averageSecondsPerTurn, formatDuration, gameSummaryText } from "./summary";
 import { renderMarkdown } from "./markdown";
 import { ownerBadge } from "./mapView";
 import type { UiState } from "./uiState";
@@ -372,7 +373,27 @@ const VICTORY_TEXT: Record<VictoryType, string> = {
   eliminated: "Your capital was captured.",
 };
 
-function endModal(s: GameState): string {
+function statCard(value: string | number, label: string, detail = ""): string {
+  return `<div class="stat-card"><span class="stat-value">${value}</span><span class="stat-label">${label}</span>${detail ? `<span class="stat-detail">${detail}</span>` : ""}</div>`;
+}
+
+function endStats(s: GameState, ui: UiState): string {
+  const you = getPlayer(s, HUMAN_PLAYER);
+  const st = you.stats;
+  const cards = [
+    statCard(formatDuration(ui.playSeconds), "Play time", `${Math.round(averageSecondsPerTurn(s, ui.playSeconds))}s per turn`),
+    statCard(`${s.turn}<small>/${s.maxTurns}</small>`, "Turns"),
+    statCard(computeScore(s, HUMAN_PLAYER).total, "Score"),
+    statCard(citiesOf(s, HUMAN_PLAYER).length, "Cities", `${you.citiesFounded} founded · ${st.citiesCaptured} captured`),
+    statCard(`${st.battlesWon}–${st.battlesLost}`, "Battles", "won–lost"),
+    statCard(st.unitsBuilt, "Units built", `${st.unitsLost} lost`),
+    statCard(`${you.techs.length}<small>/${TECHS.length}</small>`, "Techs"),
+    statCard(st.buildingsBuilt, "Buildings"),
+  ];
+  return `<h3>Your game</h3><div class="end-stats">${cards.join("")}</div>`;
+}
+
+function endModal(s: GameState, ui: UiState): string {
   const won = s.winner === HUMAN_PLAYER;
   const winner = s.winner !== null ? getPlayer(s, s.winner) : null;
   const rows = s.players
@@ -384,8 +405,11 @@ function endModal(s: GameState): string {
     "end",
     won ? "🏆 Victory!" : "Defeat",
     `<p class="tagline">${winner ? `${esc(winner.name)}${winner.isHuman ? " (you)" : ""} wins.` : ""} ${s.victory ? esc(VICTORY_TEXT[s.victory]) : ""}</p>
-     <table class="scores"><thead><tr><th scope="col">Player</th><th scope="col">Cities</th><th scope="col">Pop</th><th scope="col">Techs</th><th scope="col">Land</th><th scope="col">Buildings</th><th scope="col">Total</th></tr></thead><tbody>${rows}</tbody></table>
-     <div class="row-buttons">${btn("play-again", "Play again", { cls: "primary big" })}</div>`,
+     ${endStats(s, ui)}
+     <h3>Final scores <small class="hint">(points per category)</small></h3>
+     <table class="scores"><caption class="sr-only">Final score points per category for each player</caption><thead><tr><th scope="col">Player</th><th scope="col">Cities</th><th scope="col">Pop</th><th scope="col">Techs</th><th scope="col">Land</th><th scope="col">Buildings</th><th scope="col">Total</th></tr></thead><tbody>${rows}</tbody></table>
+     <details class="summary-text"><summary>Show summary text</summary><textarea readonly rows="6" aria-label="Game summary">${esc(gameSummaryText(s, ui.playSeconds))}</textarea></details>
+     <div class="row-buttons">${btn("copy-summary", ui.summaryCopied ? "Copied ✓" : "Copy summary", { title: "Copy a text recap of this game (handy for playtest notes)" })}${btn("play-again", "Play again", { cls: "primary big" })}</div>`,
   );
 }
 
@@ -402,7 +426,7 @@ export function renderModal(s: GameState | null, ui: UiState): string {
     case "away":
       return s ? awayModal(s, ui) : "";
     case "end":
-      return s ? endModal(s) : "";
+      return s ? endModal(s, ui) : "";
     default:
       return "";
   }

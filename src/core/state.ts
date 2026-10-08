@@ -60,6 +60,20 @@ export interface City {
   foundedTurn: number;
 }
 
+export interface PlayerStats {
+  unitsBuilt: number;
+  unitsLost: number;
+  buildingsBuilt: number;
+  battlesWon: number;
+  battlesLost: number;
+  citiesCaptured: number;
+  citiesLost: number;
+}
+
+export function emptyStats(): PlayerStats {
+  return { unitsBuilt: 0, unitsLost: 0, buildingsBuilt: 0, battlesWon: 0, battlesLost: 0, citiesCaptured: 0, citiesLost: 0 };
+}
+
 export interface Player {
   id: PlayerId;
   name: string;
@@ -76,6 +90,7 @@ export interface Player {
   /** Indexed by y * width + x. */
   explored: boolean[];
   citiesFounded: number;
+  stats: PlayerStats;
 }
 
 export type EventKind =
