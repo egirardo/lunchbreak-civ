@@ -48,6 +48,28 @@ The end screen records these automatically. Use **Copy summary** and paste the t
 - **Easy may be harder than simulations suggest.** In simulation the AI-played human seat won 5 of 6 Easy games; here a human lost narrowly. One game isn't enough to act on.
 - **Playtest 1's early-rush concern didn't recur.** One city was captured, but no rival was eliminated and the game went to turn 30.
 
+### Playtest 3 — 2026-10-08
+
+| Measure | Result |
+|---|---|
+| Difficulty | Normal |
+| Total time | **18:11** (avg 36s per turn) |
+| Turn the game ended | 30 (went the full length) |
+| Ending | **Victory on score**: 141 vs Crimson Dominion 71, Golden Union 62 |
+| Cities | 4 (3 founded, 1 captured, 0 lost); AIs ended with 1 each |
+| Techs | 6 of 12 (AIs: 7 and 6) |
+| Units | 9 built, 2 lost; battles 6 won, 2 lost |
+| Buildings | 3 |
+| Culture | 0 |
+
+**Notes:** First game on Normal, and first with the orders bar and Actions/Log tabs. No written impressions yet.
+
+**Observations:**
+- **Pacing is still on target.** 18:11 at 36s per turn, within the 18–22 minute window.
+- **A runaway win on Normal.** The player doubled both AI scores. Both AIs finished with a single city, far below the 2.7 average in simulation, so they either expanded poorly or lost cities to the player's 6 won battles. One game isn't enough to call Normal too easy, but it contrasts with Playtest 2's narrow loss on Easy.
+- **Techs are low in every human game, for the AIs too.** The player got 5 and 6 techs in Playtests 2–3; here the AIs got 6–7, versus about 8 in AI-only simulations. Human games seem to run lower on science. Possible causes: more warfare disrupting AI cities, or less science-focused play. Worth one simulation comparing AI science when the human seat plays aggressively.
+- **More buildings than Playtest 2** (3 vs 1) with the new UI, consistent with cities being easier to manage now.
+
 ## Changes
 
 ### 2026-10-07 — Culture threshold 20 → 25, Temple cost 30 → 40
