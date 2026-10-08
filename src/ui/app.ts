@@ -98,7 +98,8 @@ export class App {
     root.addEventListener("click", (e) => this.onClick(e));
     root.addEventListener("change", (e) => {
       const select = e.target as HTMLSelectElement;
-      if (select.dataset.action === "focus") this.handleAction("focus", { ...select.dataset, focus: select.value });
+      // Selects use data-change (not data-action) so clicking to open them isn't treated as a button press.
+      if (select.dataset.change === "focus") this.handleAction("focus", { ...select.dataset, focus: select.value });
     });
     document.addEventListener("keydown", (e) => this.onKey(e));
     const unlock = (): void => {

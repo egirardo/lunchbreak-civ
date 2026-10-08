@@ -210,7 +210,7 @@ function cityPanel(s: GameState, ui: UiState): string {
       return `<option value="${f}"${city.focus === f ? " selected" : ""}${f === "science" && !hasLibrary ? " disabled" : ""}>${label}</option>`;
     })
     .join("");
-  const focusSelect = `<label class="focus-select">Focus <select data-action="focus" data-city="${city.id}" data-focus-key="focus-${city.id}" title="Which tiles this city prioritises">${focusOptions}</select></label>`;
+  const focusSelect = `<label class="focus-select">Focus <select data-change="focus" data-city="${city.id}" data-focus-key="focus-${city.id}" title="Which tiles this city prioritises">${focusOptions}</select></label>`;
   const items = buildableItems(s, city).map((item) => buildButton(city, item, y.production)).join("");
   const buildings = city.buildings
     .map((b) => `<span title="${esc(BUILDINGS[b].description)}">${sprite(`building:${b}`, BUILDING_GLYPH[b], "icon")} ${esc(BUILDINGS[b].name)}</span>`)
