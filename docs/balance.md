@@ -88,6 +88,38 @@ The end screen records these automatically. Use **Copy summary** and paste the t
 
 ## Changes
 
+### 2026-10-08 — AI defends itself and retaliates (AI behaviour only, no rule changes)
+
+**Why:** In Playtest 3 the player said the AIs "didn't push back much". Simulation confirmed it: against an aggressive player on Normal, the player won 63% and 28% of AIs were eliminated (see Playtest 3).
+
+**Root cause:** a city defends at max(5, garrison strength), so a Warrior garrison adds nothing. Two Warriors with the flanking bonus (6) take any city without Walls, and the AI only built Walls after the attack had started. Extra AI units alone (tried first) only moved the aggressive player's win rate from 63% to 58%.
+
+**Changes (in `src/core/ai.ts`):**
+- Research Bronze Working from turn 3, which unlocks Walls. Culture-strategy AIs only do this when under attack, which preserves the culture tuning.
+- Wall the capital from turn 6; wall every city when at war.
+- Prefer Archers (strength 7) as city garrisons.
+- Keep a standing army of one unit per city plus one from turn 5.
+- **War mode** when threatened or recently attacked (read from the last 6 turns of the event log): arm up to two units per city plus two, build Walls, and prefer military research.
+- **Retaliate:** march on whoever attacked us as soon as our army is at least as strong, instead of only the weakest rival with a 1.3× edge.
+
+**Result (40 seeds per row, Normal unless noted):**
+
+| Measure | Before | After |
+|---|---|---|
+| Aggressive player wins | 63% | **33%** |
+| AIs eliminated by an aggressive player | 28% | **5%** |
+| AI cities at end, vs aggressive player | 1.8 | **2.3** |
+| AI attacks on an aggressive player per game | 2.8 | **3.2** (95% of games have some) |
+| Aggressive player wins on Easy | 93% | **68%** |
+| Culture endings, AI-only games | 13 / 40 | **12 / 40** |
+| Max AI turn time | ~5 ms | ~3 ms |
+| Seat fairness, AI-only Normal (90 games, rotated start tech) | 47 / 21 / 32% | **39 / 26 / 36%** |
+
+**Trade-off:** average techs dipped from about 8.0 to 7.4 per AI, because early production now goes into Walls and armies before Libraries. That's still near the 8–9 target. Watch it in playtests.
+
+**Follow-up for playtests:** check that Normal now feels contested, without the AIs feeling unfair or relentless, and that Easy still feels forgiving.
+
+
 ### 2026-10-07 — Culture threshold 20 → 25, Temple cost 30 → 40
 
 **Why:** with AIs pursuing culture, culture victories ended 34 of 60 Normal games and culture-strategy AIs won 55% (fair share is about 33%).

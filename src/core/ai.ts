@@ -33,6 +33,12 @@ const MIN_CITY_SPACING = 3;
 const THREAT_RADIUS = 3;
 const SETTLER_SEARCH_RADIUS = 7;
 const LAST_SETTLER_TURN = 20;
+/** From this turn the AI keeps a standing army of one unit per city plus one. */
+const STANDING_ARMY_TURN = 5;
+/** How many turns an attack on us is remembered when choosing whom to fight. */
+const GRUDGE_TURNS = 6;
+/** Capital walls go up from this turn; a city's garrison alone doesn't raise its defense above 5. */
+const CAPITAL_WALLS_TURN = 6;
 /** Chance that a given AI plays for a culture victory this game. */
 const CULTURE_STRATEGY_CHANCE = 0.35;
 const CULTURE_PATH: TechId[] = ["writing", "mathematics", "philosophy"];
@@ -52,6 +58,10 @@ interface TurnContext {
   rng: Rng;
   strategy: AiStrategy;
   threatened: boolean;
+  /** Rival that attacked us recently (the one we fight back against), if any. */
+  aggressor: PlayerId | null;
+  /** Threatened or recently attacked: arm up, build walls, prefer military research. */
+  atWar: boolean;
   /** Enemy city the army marches on this turn, or null when defending. */
   warTarget: Point | null;
   /** Unit id → city it should garrison. */
@@ -69,10 +79,13 @@ export function runAiTurn(state: GameState, pid: PlayerId): GameState {
     rng,
     strategy: aiStrategy(state, pid),
     threatened: isThreatened(s, pid),
+    aggressor: recentAggressor(s, pid),
+    atWar: false,
     warTarget: null,
     garrisonOrders: new Map(),
     pathCache: new Map(),
   };
+  ctx.atWar = ctx.threatened || ctx.aggressor !== null;
   ctx.warTarget = chooseWarTarget(s, ctx);
   ctx.garrisonOrders = assignGarrisons(s, pid);
 
@@ -107,6 +120,22 @@ function isThreatened(s: GameState, pid: PlayerId): boolean {
   );
 }
 
+/** The living rival that attacked or took cities from us most in the last few turns. Read from the event log, so it needs no saved state. */
+function recentAggressor(s: GameState, pid: PlayerId): PlayerId | null {
+  const counts = new Map<PlayerId, number>();
+  for (const e of s.events) {
+    if (e.turn < s.turn - GRUDGE_TURNS) continue;
+    if (e.kind !== "combat" && e.kind !== "cityCaptured") continue;
+    const [attacker, defender] = e.involves;
+    if (defender !== pid || attacker === undefined || attacker === pid) continue;
+    if (!s.players[attacker]?.alive) continue;
+    counts.set(attacker, (counts.get(attacker) ?? 0) + (e.kind === "cityCaptured" ? 3 : 1));
+  }
+  let worst: PlayerId | null = null;
+  for (const [id, n] of counts) if (worst === null || n > (counts.get(worst) ?? 0)) worst = id;
+  return worst;
+}
+
 /** Weakest living rival by military strength, attacked only with a clear edge. Uses full map knowledge to keep the AI simple. */
 function chooseWarTarget(s: GameState, ctx: TurnContext): Point | null {
   if (s.difficulty === "easy" && s.turn < RULES.easy.aiNoAttackBeforeTurn - 2) return null;
@@ -114,7 +143,17 @@ function chooseWarTarget(s: GameState, ctx: TurnContext): Point | null {
   const armySize = unitsOf(s, ctx.pid).filter(isMilitary).length;
   const myCities = citiesOf(s, ctx.pid);
   const alarmed = cultureRivalAlarming(s, ctx.pid);
-  if (armySize < myCities.length + (alarmed ? 1 : 2) || myCities.length === 0) return null;
+  if (myCities.length === 0) return null;
+  const home = myCities.find((c) => c.isCapital) ?? myCities[0];
+  if (!home) return null;
+
+  // Fight back: march on whoever attacked us as soon as we're at least as strong.
+  if (ctx.aggressor !== null && armySize >= myCities.length + 1 && ours >= militaryStrength(s, ctx.aggressor)) {
+    const theirs = citiesOf(s, ctx.aggressor).sort((a, b) => distance(home, a) - distance(home, b));
+    if (theirs[0]) return { x: theirs[0].x, y: theirs[0].y };
+  }
+
+  if (armySize < myCities.length + (alarmed ? 1 : 2)) return null;
 
   const alarm = RULES.cultureVictoryThreshold * CULTURE_ALARM;
   const rivals = s.players
@@ -125,8 +164,6 @@ function chooseWarTarget(s: GameState, ctx: TurnContext): Point | null {
   const weakest = rivals.find((r) => ours >= (r.cultureThreat ? r.strength : r.strength * 1.3 + 5));
   if (!weakest) return null;
 
-  const home = myCities.find((c) => c.isCapital) ?? myCities[0];
-  if (!home) return null;
   const targets = citiesOf(s, weakest.id).sort((a, b) => distance(home, a) - distance(home, b));
   return targets[0] ? { x: targets[0].x, y: targets[0].y } : null;
 }
@@ -159,11 +196,14 @@ function chooseResearch(s: GameState, ctx: TurnContext): GameState {
   if (getPlayer(s, ctx.pid).researching) return s;
   const options = availableTechs(s, ctx.pid);
   if (options.length === 0) return s;
+  // Culture rushers only detour for Walls when actually under attack, so their Philosophy timing stays as tuned.
+  const wantsWallsTech = ctx.atWar || (ctx.strategy !== "culture" && s.turn >= 3);
+  if (options.includes("bronzeWorking") && wantsWallsTech) return setResearch(s, ctx.pid, "bronzeWorking");
   if (ctx.strategy === "culture") {
     const next = CULTURE_PATH.find((t) => options.includes(t));
     if (next) return setResearch(s, ctx.pid, next);
   }
-  const preferred = ctx.threatened || ctx.warTarget ? "military" : "economy";
+  const preferred = ctx.atWar || ctx.warTarget ? "military" : "economy";
   const score = (t: TechId): number => {
     const tech = TECH_BY_ID[t];
     const branchPenalty = tech.branch === preferred ? 0 : tech.branch === "science" ? 6 : 12;
@@ -186,7 +226,7 @@ function bestMilitaryUnit(s: GameState, ctx: TurnContext): UnitTypeId {
 const BUILDING_PRIORITY: BuildingId[] = ["library", "granary", "workshop", "temple", "university", "walls"];
 
 function chooseBuilding(s: GameState, city: City, ctx: TurnContext): BuildingId | null {
-  if (ctx.threatened && canBuildBuilding(s, city, "walls")) return "walls";
+  if (ctx.atWar && canBuildBuilding(s, city, "walls")) return "walls";
   if (ctx.strategy === "culture" && canBuildBuilding(s, city, "temple")) return "temple";
   return BUILDING_PRIORITY.find((b) => b !== "walls" && canBuildBuilding(s, city, b)) ?? null;
 }
@@ -199,8 +239,11 @@ function chooseProduction(s: GameState, city: City, ctx: TurnContext, queued: { 
   const settlers = units.filter((u) => u.type === "settler").length + queued.settlers;
   const workers = units.filter((u) => u.type === "worker").length + queued.workers;
 
-  if (military < cities.length || (ctx.threatened && !hasGarrison(s, city))) {
-    return { kind: "unit", id: bestMilitaryUnit(s, ctx) };
+  if (military < cities.length || (ctx.atWar && !hasGarrison(s, city))) {
+    return { kind: "unit", id: canBuildUnit(s, pid, "archer") ? "archer" : bestMilitaryUnit(s, ctx) };
+  }
+  if (city.isCapital && s.turn >= CAPITAL_WALLS_TURN && canBuildBuilding(s, city, "walls")) {
+    return { kind: "building", id: "walls" };
   }
   if (ctx.strategy === "culture" && canBuildBuilding(s, city, "temple")) {
     return { kind: "building", id: "temple" };
@@ -208,7 +251,12 @@ function chooseProduction(s: GameState, city: City, ctx: TurnContext, queued: { 
   if (cities.length + settlers < cityLimit(s, pid) && settlers < 1 && s.turn <= LAST_SETTLER_TURN) {
     return { kind: "unit", id: "settler" };
   }
-  if (ctx.threatened && military < cities.length * 2 + 1) {
+  if (ctx.atWar) {
+    if (military < cities.length * 2 + 2) return { kind: "unit", id: bestMilitaryUnit(s, ctx) };
+    const walls = canBuildBuilding(s, city, "walls");
+    if (walls) return { kind: "building", id: "walls" };
+  }
+  if (s.turn >= STANDING_ARMY_TURN && military < cities.length + 1) {
     return { kind: "unit", id: bestMilitaryUnit(s, ctx) };
   }
   const canImprove = hasTech(s, pid, "agriculture") || hasTech(s, pid, "mining");

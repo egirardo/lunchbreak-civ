@@ -121,4 +121,56 @@ describe("AI", () => {
       expect(runAiTurn(standard, 1).cities[0]?.current).not.toEqual({ kind: "building", id: "temple" });
     });
   });
+
+  describe("defence and retaliation", () => {
+    function withStrategy(s: GameState, strategy: "culture" | "standard"): GameState {
+      for (let seed = 1; seed < 500; seed++) {
+        s.seed = seed;
+        if (aiStrategy(s, 1) === strategy) return s;
+      }
+      throw new Error(`no seed gives ${strategy}`);
+    }
+
+    it("researches Bronze Working early so it can build Walls", () => {
+      const s = withStrategy(makeState(), "standard");
+      s.turn = 3;
+      addCity(s, 1, 4, 4);
+      giveTechs(s, 1, ["agriculture"]);
+      expect(runAiTurn(s, 1).players[1]?.researching).toBe("bronzeWorking");
+    });
+
+    it("walls its capital from turn 6 without waiting to be attacked", () => {
+      const s = withStrategy(makeState(), "standard");
+      s.turn = 6;
+      addCity(s, 1, 4, 4, { population: 2 });
+      addUnit(s, "warrior", 1, 4, 4);
+      giveTechs(s, 1, ["bronzeWorking"]);
+      expect(runAiTurn(s, 1).cities[0]?.current).toEqual({ kind: "building", id: "walls" });
+    });
+
+    it("arms up when an enemy army is near its cities", () => {
+      const s = withStrategy(makeState({ width: 12, height: 12 }), "standard");
+      addCity(s, 1, 2, 2, { buildings: ["walls"] });
+      addUnit(s, "warrior", 1, 2, 2);
+      addUnit(s, "warrior", 0, 4, 4);
+      expect(runAiTurn(s, 1).cities[0]?.current?.kind).toBe("unit");
+    });
+
+    it("counterattacks whoever attacked it, even when that rival isn't the weakest", () => {
+      const s = withStrategy(makeState({ width: 16, height: 8 }), "standard");
+      s.turn = 12;
+      addCity(s, 1, 8, 4, { buildings: ["walls"] });
+      addCity(s, 0, 1, 1);
+      addCity(s, 2, 14, 6);
+      for (const x of [7, 8, 9]) addUnit(s, "horseman", 1, x, 3);
+      addUnit(s, "warrior", 1, 8, 4);
+      addUnit(s, "warrior", 0, 1, 1);
+      addUnit(s, "warrior", 0, 2, 1);
+      s.events.push({ turn: 11, kind: "combat", message: "P0 attacked P1", involves: [0, 1] });
+      const after = runAiTurn(s, 1);
+      const moved = after.units.filter((u) => u.owner === 1 && u.type === "horseman");
+      // Player 2 is weaker (no army) but player 0 attacked, so the army heads west toward player 0.
+      expect(moved.every((u) => u.x < 8)).toBe(true);
+    });
+  });
 });

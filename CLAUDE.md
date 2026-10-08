@@ -207,6 +207,7 @@ The game ends at the turn limit (turn 30) or earlier if someone wins:
 
 - AI turns must resolve in **under 1 second**.
 - AI should be simple and predictable: expand, research, build military, attack the weakest neighbor.
+- AI defends itself: it keeps a standing army (one unit per city plus one) from turn 5, walls its capital from turn 6, and when attacked or threatened it arms up, builds Walls, and counterattacks whoever attacked it. Details and tuning data are in `docs/balance.md`.
 - Difficulty levels Easy / Normal only.
   - **Normal**: standard rules.
   - **Easy**: AI production is reduced by 25% (rounded down), and the AI does not attack before turn 10.
