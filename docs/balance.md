@@ -4,7 +4,24 @@ Every balance change, with the observation that motivated it and before/after nu
 
 ## Playtests
 
-_No human playtests logged yet. For each one, record: date, difficulty, total time, average seconds per turn, techs researched, cities founded, how the game ended, and qualitative notes._
+For each playtest, record: date, difficulty, total time, average seconds per turn, techs researched, cities founded, how the game ended, and qualitative notes. Mark anything not measured as unknown.
+
+### Playtest 1 — 2026-10-08
+
+| Measure | Result |
+|---|---|
+| Difficulty | Unknown |
+| Total time | Not measured; felt under 20 minutes |
+| Turn the game ended | Unknown (before turn 30) |
+| Units built | 3 Warriors, 1 Worker |
+| Techs / cities | Unknown |
+| Ending | **Domination win**: captured both rival capitals |
+
+**Notes:** The player won by taking the two nearby rival capitals with Warriors. It felt short.
+
+**Hypothesis (not yet tested):** early rushes on capitals may be too easy. A city defends at 5, the same as a Warrior garrison. Two Warriors attacking together get +1 flanking (6 vs 5) and take any capital without Walls. Capturing a capital eliminates that player, so one early raid can knock a rival out entirely. The AI garrisons each city with one unit and only builds Walls once it sees a threat.
+
+**Follow-up:** check in the next playtests whether early domination keeps happening. If it does, candidate fixes are a higher city base defense (5 → 6), a stronger capital, or AIs keeping a second defender in the capital. Each should be tested in simulation first.
 
 ## Changes
 
