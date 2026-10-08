@@ -26,7 +26,14 @@ export interface UiState {
   /** Active play time, shown on the end screen. */
   playSeconds: number;
   summaryCopied: boolean;
+  sidebarTab: SidebarTab;
+  /** Key of the newest event the player has seen on the Log tab. */
+  lastSeenEventKey: string | null;
+  /** Events involving the player that arrived since they last viewed the Log tab. */
+  unreadLog: number;
 }
+
+export type SidebarTab = "actions" | "log";
 
 export function initialUiState(hasSave: boolean): UiState {
   return {
@@ -44,5 +51,8 @@ export function initialUiState(hasSave: boolean): UiState {
     hasSave,
     playSeconds: 0,
     summaryCopied: false,
+    sidebarTab: "actions",
+    lastSeenEventKey: null,
+    unreadLog: 0,
   };
 }

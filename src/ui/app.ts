@@ -35,7 +35,7 @@ import { isMusicEnabled, isMuted, playSfx, setMusicEnabled, setMuted, startMusic
 import { minutesLabel } from "./format";
 import { renderMap, tileId, type MapContext } from "./mapView";
 import { renderModal, renderSidebar, renderTopbar } from "./panels";
-import { initialUiState, type Modal, type UiState } from "./uiState";
+import { initialUiState, type Modal, type SidebarTab, type UiState } from "./uiState";
 
 const TARGET_SECONDS_PER_TURN = 40;
 const MAX_COUNTED_TURN_SECONDS = 300;
@@ -67,6 +67,7 @@ export class App {
   private readonly sidebar: HTMLElement;
   private readonly modal: HTMLElement;
   private pointerDownOnBackdrop = false;
+  private lastSelection: string | null = null;
   private readonly live: HTMLElement;
 
   constructor(root: HTMLElement) {
@@ -186,6 +187,7 @@ export class App {
       this.topbar.innerHTML = renderTopbar(s, this.timeLeft());
       this.map.innerHTML = renderMap(this.mapContext(s));
       this.map.setAttribute("aria-activedescendant", tileId(this.ui.cursor.x, this.ui.cursor.y));
+      this.syncSidebarTab(s);
       this.sidebar.innerHTML = renderSidebar(s, this.ui);
     } else {
       this.topbar.innerHTML = "";
@@ -314,6 +316,25 @@ export class App {
   }
 
   /** Flip to the next/previous unit still awaiting orders, closing any open city so the unit is visible. */
+  /** Changing what's selected means the player wants to act, so show Actions; keep the Log's unread count current. */
+  private syncSidebarTab(s: GameState): void {
+    const selection = `${this.ui.selectedUnitId}|${this.ui.selectedCityId}|${this.ui.pendingAttack ? "attack" : ""}`;
+    if (this.lastSelection !== null && selection !== this.lastSelection) this.ui.sidebarTab = "actions";
+    this.lastSelection = selection;
+
+    const mine = s.events.filter((e) => e.involves.includes(HUMAN_PLAYER));
+    const newest = mine[mine.length - 1];
+    if (this.ui.sidebarTab === "log") this.ui.lastSeenEventKey = newest ? eventKey(newest) : null;
+    const seenAt = this.ui.lastSeenEventKey === null ? -1 : mine.findIndex((e) => eventKey(e) === this.ui.lastSeenEventKey);
+    this.ui.unreadLog = this.ui.lastSeenEventKey !== null && seenAt === -1 ? mine.length : mine.length - 1 - seenAt;
+  }
+
+  private switchTab(tab: SidebarTab): void {
+    this.ui.sidebarTab = tab;
+    this.render();
+    document.getElementById(`tab-${tab}`)?.focus();
+  }
+
   private cycleUnits(dir: 1 | -1): void {
     const s = this.state;
     if (!s) return;
@@ -331,6 +352,7 @@ export class App {
     this.ui.pendingAttack = null;
     this.ui.cursor = { x: unit.x, y: unit.y };
     this.ui.status = "";
+    this.ui.sidebarTab = "actions";
     this.sfx("select");
     this.announce(`${UNITS[unit.type].name}, ${nextIdx + 1} of ${ready.length} awaiting orders.`);
     this.render();
@@ -389,6 +411,9 @@ export class App {
     this.ui.playSeconds = data.playSeconds;
     const s = data.state;
     this.ui.awayEvents = s.events.filter((e) => e.turn >= s.turn - 1 && e.involves.includes(HUMAN_PLAYER));
+    const mine = s.events.filter((e) => e.involves.includes(HUMAN_PLAYER));
+    const newest = mine[mine.length - 1];
+    this.ui.lastSeenEventKey = newest ? eventKey(newest) : null;
     this.ui.lastTurnEvents = [];
     if (s.phase === "chooseTech") this.ui.modal = "chooseTech";
     else if (s.phase === "ended") this.ui.modal = "end";
@@ -552,6 +577,7 @@ export class App {
     this.ui.selectedCityId = cityId;
     const city = s.cities.find((c) => c.id === cityId);
     if (city) this.ui.cursor = { x: city.x, y: city.y };
+    this.ui.sidebarTab = "actions";
     this.render();
     this.sidebar.querySelector<HTMLElement>(".city-panel button")?.focus();
   }
@@ -667,6 +693,9 @@ export class App {
         if (isMusicEnabled()) startMusic();
         else stopMusic();
         break;
+      case "tab":
+        this.switchTab(data.tab === "log" ? "log" : "actions");
+        return;
       case "copy-summary":
         this.copySummary();
         break;
@@ -709,6 +738,11 @@ export class App {
         this.ui.selectedCityId = null;
         this.render();
       }
+      return;
+    }
+    if (target.getAttribute("role") === "tab" && (e.key === "ArrowLeft" || e.key === "ArrowRight")) {
+      e.preventDefault();
+      this.switchTab(this.ui.sidebarTab === "log" ? "actions" : "log");
       return;
     }
     if (e.key === "?") {
@@ -767,6 +801,10 @@ export class App {
       case "p":
       case "P":
         this.cycleUnits(-1);
+        return;
+      case "l":
+      case "L":
+        this.switchTab(this.ui.sidebarTab === "log" ? "actions" : "log");
         return;
       case "c":
       case "C":

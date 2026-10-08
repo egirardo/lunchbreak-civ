@@ -224,9 +224,8 @@ kbd {
     border-top: 3px solid #000;
     max-height: none;
   }
-  .sidebar-info {
+  .tab-panel {
     flex: none;
-    min-height: 0;
     overflow: visible;
   }
   .main {
@@ -542,18 +541,59 @@ kbd {
   margin: 0.15rem 0;
 }
 
-.sidebar-actions {
+.tabs {
   display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
+  gap: 0.3rem;
   flex: none;
 }
 
-/* Reference info takes the leftover height and scrolls by itself, keeping actions in view. */
-.sidebar-info {
+.tabs [role="tab"] {
+  flex: 1;
+  font-weight: bold;
+  color: var(--muted);
+  background: var(--bg);
+  border-bottom-width: 4px;
+}
+
+.tabs [role="tab"][aria-selected="true"] {
+  color: var(--text);
+  background: var(--panel-2);
+  border-color: var(--accent);
+}
+
+.unread {
+  display: inline-block;
+  min-width: 1.4em;
+  padding: 0 0.3em;
+  margin-left: 0.2em;
+  font-size: 0.8rem;
+  line-height: 1.4;
+  color: #000;
+  background: var(--accent);
+  border: 2px solid #000;
+}
+
+/* The active tab takes all remaining height and scrolls by itself. */
+.tab-panel {
   flex: 1 1 0;
-  min-height: 5rem;
+  min-height: 0;
   overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.tab-panel[hidden] {
+  display: none;
+}
+
+.tile-strip {
+  padding-top: 0.35rem;
+  padding-bottom: 0.35rem;
+}
+
+.log-panel {
+  flex: 1 0 auto;
 }
 
 .info-block > h3:first-child {

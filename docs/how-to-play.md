@@ -142,6 +142,7 @@ You earn points from:
 - **Click a tile** to select, move, or attack (or use the **arrow keys** and **Enter**)
 - **Click a city** to build something or change focus
 - **Units needing orders** are listed at the top of the side panel and marked **!** on the map. Use **◀ ▶** (or **P** / **N**) to flip between them
+- **Actions / Log tabs** on the side panel: Log shows rivals and what has happened (a number on the tab means new events). Press **L** to switch
 - **Press Space** to end your turn
 - **Hover over things** to see tooltips with more info
 - **Press ? to open this guide in-game**

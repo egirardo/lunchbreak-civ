@@ -34,7 +34,7 @@ import { BUILDING_GLYPH, ICON, UNIT_GLYPH, icon, sprite } from "./glyphs";
 import { averageSecondsPerTurn, formatDuration, gameSummaryText } from "./summary";
 import { renderMarkdown } from "./markdown";
 import { ownerBadge } from "./mapView";
-import type { UiState } from "./uiState";
+import type { SidebarTab, UiState } from "./uiState";
 import howToPlay from "../../docs/how-to-play.md?raw";
 
 function btn(action: string, label: string, opts: { data?: Record<string, string | number>; cls?: string; title?: string; label?: string; disabled?: boolean; pressed?: boolean; key?: string } = {}): string {
@@ -284,7 +284,7 @@ function rivalsPanel(s: GameState): string {
 }
 
 function logPanel(s: GameState, ui: UiState): string {
-  const recent = s.events.filter((e) => e.involves.includes(HUMAN_PLAYER)).slice(-8).reverse();
+  const recent = s.events.filter((e) => e.involves.includes(HUMAN_PLAYER)).slice(-30).reverse();
   const lastTurn = ui.lastTurnEvents.length
     ? `<h3>Last turn</h3>${eventList(ui.lastTurnEvents, "")}`
     : "";
@@ -292,11 +292,17 @@ function logPanel(s: GameState, ui: UiState): string {
 }
 
 export function renderSidebar(s: GameState, ui: UiState): string {
-  // Things to act on stay at the top; reference info scrolls on its own below so actions never fall off-screen.
+  const tab = ui.sidebarTab;
+  const tabButton = (id: SidebarTab, label: string): string =>
+    `<button type="button" role="tab" id="tab-${id}" aria-controls="tabpanel-${id}" aria-selected="${tab === id}" tabindex="${tab === id ? 0 : -1}" ` +
+    `data-action="tab" data-tab="${id}" data-focus-key="tab:${id}" aria-keyshortcuts="L">${label}</button>`;
+  const unread = ui.unreadLog > 0 ? ` <span class="unread" aria-label="${ui.unreadLog} new">${ui.unreadLog > 9 ? "9+" : ui.unreadLog}</span>` : "";
   const focus = cityPanel(s, ui) || unitPanel(s, ui);
-  const actions = [ordersBar(s, ui), warnings(s, ui), attackPanel(s, ui), focus].join("");
-  const info = [tileInfo(s, ui), rivalsPanel(s), logPanel(s, ui)].join("");
-  return `<div class="sidebar-actions">${actions}</div><div class="panel sidebar-info" role="region" aria-label="Map info, rivals and events" tabindex="0">${info}</div>`;
+  const actions = [ordersBar(s, ui), warnings(s, ui), attackPanel(s, ui), focus, `<div class="panel tile-strip">${tileInfo(s, ui)}</div>`].join("");
+  const log = `<div class="panel log-panel">${rivalsPanel(s)}${logPanel(s, ui)}</div>`;
+  return `<div class="tabs" role="tablist" aria-label="Side panel">${tabButton("actions", "Actions")}${tabButton("log", `Log${unread}`)}</div>
+    <div class="tab-panel" id="tabpanel-actions" role="tabpanel" aria-labelledby="tab-actions"${tab === "actions" ? "" : " hidden"}>${tab === "actions" ? actions : ""}</div>
+    <div class="tab-panel" id="tabpanel-log" role="tabpanel" aria-labelledby="tab-log" tabindex="0"${tab === "log" ? "" : " hidden"}>${tab === "log" ? log : ""}</div>`;
 }
 
 // ---------- modals ----------
@@ -367,7 +373,7 @@ function helpModal(): string {
     <ul class="keys">
       <li><kbd>Arrows</kbd> move the map cursor · <kbd>Enter</kbd> act on the cursor tile (select / move / attack)</li>
       <li><kbd>Space</kbd> end turn · <kbd>N</kbd>/<kbd>P</kbd> next/previous unit needing orders · <kbd>S</kbd> skip unit · <kbd>F</kbd> found city · <kbd>G</kbd>/<kbd>M</kbd> build farm/mine</li>
-      <li><kbd>C</kbd> open city at cursor · <kbd>T</kbd> tech tree · <kbd>?</kbd> help · <kbd>Esc</kbd> close / cancel</li>
+      <li><kbd>C</kbd> open city at cursor · <kbd>T</kbd> tech tree · <kbd>L</kbd> switch Actions/Log tab · <kbd>?</kbd> help · <kbd>Esc</kbd> close / cancel</li>
     </ul>
     <div class="row-buttons">${btn("close-modal", `Close${kbd("Esc")}`, { cls: "primary" })}</div>`, "wide reading");
 }
