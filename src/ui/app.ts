@@ -1,4 +1,5 @@
 import { endTurn } from "../core/game";
+import { UNITS } from "../data/units";
 import { tileIndex, type Point } from "../core/grid";
 import {
   attackTargets,
@@ -6,6 +7,7 @@ import {
   getPlayer,
   getUnit,
   nextUnitNeedingOrders,
+  unitsNeedingOrders,
   reachableTiles,
   unitAt,
   visibleTiles,
@@ -311,6 +313,29 @@ export class App {
     }
   }
 
+  /** Flip to the next/previous unit still awaiting orders, closing any open city so the unit is visible. */
+  private cycleUnits(dir: 1 | -1): void {
+    const s = this.state;
+    if (!s) return;
+    const ready = unitsNeedingOrders(s, HUMAN_PLAYER);
+    if (ready.length === 0) {
+      this.announce("All units have orders. Press Space to end the turn.");
+      return;
+    }
+    const idx = ready.findIndex((u) => u.id === this.ui.selectedUnitId);
+    const nextIdx = idx === -1 ? (dir === 1 ? 0 : ready.length - 1) : (idx + dir + ready.length) % ready.length;
+    const unit = ready[nextIdx];
+    if (!unit) return;
+    this.ui.selectedUnitId = unit.id;
+    this.ui.selectedCityId = null;
+    this.ui.pendingAttack = null;
+    this.ui.cursor = { x: unit.x, y: unit.y };
+    this.ui.status = "";
+    this.sfx("select");
+    this.announce(`${UNITS[unit.type].name}, ${nextIdx + 1} of ${ready.length} awaiting orders.`);
+    this.render();
+  }
+
   private afterUnitAction(unitId: number): void {
     const s = this.state;
     if (!s) return;
@@ -609,8 +634,11 @@ export class App {
         this.skipAction();
         return;
       case "next-unit":
-        this.selectNext(this.ui.selectedUnitId ?? undefined);
-        break;
+        this.cycleUnits(1);
+        return;
+      case "prev-unit":
+        this.cycleUnits(-1);
+        return;
       case "confirm-attack":
         this.confirmAttack();
         return;
@@ -734,8 +762,11 @@ export class App {
         return;
       case "n":
       case "N":
-        this.selectNext(this.ui.selectedUnitId ?? undefined);
-        this.render();
+        this.cycleUnits(1);
+        return;
+      case "p":
+      case "P":
+        this.cycleUnits(-1);
         return;
       case "c":
       case "C":

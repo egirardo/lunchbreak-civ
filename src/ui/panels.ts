@@ -25,6 +25,7 @@ import {
   playerSciencePerTurn,
   tileYields,
   unitAt,
+  unitsNeedingOrders,
 } from "../core/queries";
 import { HUMAN_PLAYER, type BuildItem, type City, type CityFocus, type GameEvent, type GameState, type Unit, type VictoryType } from "../core/state";
 import { isMusicEnabled, isMuted } from "./audio";
@@ -132,8 +133,28 @@ function unitActions(s: GameState, u: Unit): string {
   const city = cityAt(s, u.x, u.y);
   if (city && city.owner === HUMAN_PLAYER) actions.push(btn("open-city", `Open ${esc(city.name)}${kbd("C")}`, { data: { city: city.id }, key: "C" }));
   actions.push(btn("skip", `Skip${kbd("S")}`, { title: "Skip this unit for the rest of the turn", key: "S" }));
-  actions.push(btn("next-unit", `Next unit${kbd("N")}`, { key: "N" }));
   return `<div class="actions">${actions.join("")}</div>`;
+}
+
+/** Always-visible navigator for units still awaiting orders this turn. */
+function ordersBar(s: GameState, ui: UiState): string {
+  const ready = unitsNeedingOrders(s, HUMAN_PLAYER);
+  if (ready.length === 0) {
+    return `<section class="panel orders-bar done" aria-label="Unit orders"><p><strong>✓ All units have orders.</strong> <span class="hint">Press Space to end the turn.</span></p></section>`;
+  }
+  const idx = ready.findIndex((u) => u.id === ui.selectedUnitId);
+  const current = idx >= 0 ? ready[idx] : undefined;
+  const label = current
+    ? `${sprite(`unit:${current.type}`, UNIT_GLYPH[current.type], "icon")} ${esc(UNITS[current.type].name)} <small>${idx + 1} of ${ready.length}</small>`
+    : `<small>Press ▶ to start</small>`;
+  return `<section class="panel orders-bar" aria-label="Unit orders">
+    <h2>⚑ ${ready.length === 1 ? "1 unit needs" : `${ready.length} units need`} orders</h2>
+    <div class="orders-nav">
+      ${btn("prev-unit", `◀${kbd("P")}`, { cls: "nav-btn", title: "Previous unit needing orders (P)", label: "Previous unit needing orders", key: "P" })}
+      <span class="orders-current" aria-live="off">${label}</span>
+      ${btn("next-unit", `${kbd("N")} ▶`, { cls: "nav-btn", title: "Next unit needing orders (N)", label: "Next unit needing orders", key: "N" })}
+    </div>
+  </section>`;
 }
 
 function attackPanel(s: GameState, ui: UiState): string {
@@ -273,7 +294,7 @@ function logPanel(s: GameState, ui: UiState): string {
 export function renderSidebar(s: GameState, ui: UiState): string {
   // Things to act on stay at the top; reference info scrolls on its own below so actions never fall off-screen.
   const focus = cityPanel(s, ui) || unitPanel(s, ui);
-  const actions = [warnings(s, ui), attackPanel(s, ui), focus].join("");
+  const actions = [ordersBar(s, ui), warnings(s, ui), attackPanel(s, ui), focus].join("");
   const info = [tileInfo(s, ui), rivalsPanel(s), logPanel(s, ui)].join("");
   return `<div class="sidebar-actions">${actions}</div><div class="panel sidebar-info" role="region" aria-label="Map info, rivals and events" tabindex="0">${info}</div>`;
 }
@@ -345,7 +366,7 @@ function helpModal(): string {
     <h3>Keyboard</h3>
     <ul class="keys">
       <li><kbd>Arrows</kbd> move the map cursor · <kbd>Enter</kbd> act on the cursor tile (select / move / attack)</li>
-      <li><kbd>Space</kbd> end turn · <kbd>N</kbd> next unit · <kbd>S</kbd> skip unit · <kbd>F</kbd> found city · <kbd>G</kbd>/<kbd>M</kbd> build farm/mine</li>
+      <li><kbd>Space</kbd> end turn · <kbd>N</kbd>/<kbd>P</kbd> next/previous unit needing orders · <kbd>S</kbd> skip unit · <kbd>F</kbd> found city · <kbd>G</kbd>/<kbd>M</kbd> build farm/mine</li>
       <li><kbd>C</kbd> open city at cursor · <kbd>T</kbd> tech tree · <kbd>?</kbd> help · <kbd>Esc</kbd> close / cancel</li>
     </ul>
     <div class="row-buttons">${btn("close-modal", `Close${kbd("Esc")}`, { cls: "primary" })}</div>`, "wide reading");

@@ -1002,3 +1002,56 @@ kbd {
   padding: 0.4rem;
   resize: vertical;
 }
+
+.orders-bar {
+  border-color: var(--accent);
+}
+
+.orders-bar.done {
+  border-color: var(--good);
+}
+
+.orders-bar.done p {
+  margin: 0;
+}
+
+.orders-nav {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.orders-current {
+  flex: 1;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.3rem;
+}
+
+.orders-current small {
+  color: var(--muted);
+}
+
+.nav-btn {
+  min-width: 64px;
+  font-weight: bold;
+}
+
+/* Shape (a "!" flag), not just colour, marks units still awaiting orders. */
+.orders-badge {
+  position: absolute;
+  top: -6%;
+  right: -6%;
+  min-width: 1.1em;
+  padding: 0 0.15em;
+  font-size: calc(var(--tile) * 0.26);
+  font-weight: bold;
+  line-height: 1.1;
+  text-align: center;
+  color: #000;
+  background: var(--accent);
+  border: 2px solid #000;
+  z-index: 2;
+}

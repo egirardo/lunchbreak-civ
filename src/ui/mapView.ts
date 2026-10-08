@@ -2,7 +2,7 @@ import { IMPROVEMENTS } from "../data/improvements";
 import { TERRAIN } from "../data/terrain";
 import { UNITS } from "../data/units";
 import { tileIndex } from "../core/grid";
-import { cityAt, getPlayer, tileYields, unitAt } from "../core/queries";
+import { cityAt, getPlayer, needsOrders, tileYields, unitAt } from "../core/queries";
 import { HUMAN_PLAYER, type GameState, type Player, type Tile } from "../core/state";
 import { esc } from "./format";
 import { IMPROVEMENT_GLYPH, TERRAIN_GLYPH, UNIT_GLYPH, sprite } from "./glyphs";
@@ -61,7 +61,9 @@ function describeTile(ctx: MapContext, x: number, y: number): string {
   const unit = unitAt(s, x, y);
   if (unit && (ctx.visible[i] || unit.owner === HUMAN_PLAYER)) {
     const owner = unit.owner === HUMAN_PLAYER ? "Your" : `${getPlayer(s, unit.owner).name}'s`;
-    const extra = unit.owner === HUMAN_PLAYER ? `, ${unit.movesLeft} moves left${unit.task ? ", working" : ""}` : `, strength ${UNITS[unit.type].strength}`;
+    const extra = unit.owner === HUMAN_PLAYER
+      ? `, ${unit.movesLeft} moves left${unit.task ? ", working" : ""}${needsOrders(unit) ? ", needs orders" : ""}`
+      : `, strength ${UNITS[unit.type].strength}`;
     parts.push(`${owner} ${UNITS[unit.type].name}${extra}.`);
   }
   if (!ctx.visible[i]) parts.push("Not currently visible.");
@@ -118,9 +120,11 @@ function tileHtml(ctx: MapContext, x: number, y: number): string {
     if (city) unitClasses.push("in-city");
     if (unit.id === ctx.selectedUnitId) unitClasses.push("selected");
     if (unit.owner === HUMAN_PLAYER && (unit.movesLeft === 0 || unit.skipped)) unitClasses.push("spent");
+    const awaiting = unit.owner === HUMAN_PLAYER && needsOrders(unit) && unit.id !== ctx.selectedUnitId;
     layers.push(
       `<div class="${unitClasses.join(" ")}">${sprite(`unit:${unit.type}`, UNIT_GLYPH[unit.type], "", p.color)}${ownerBadge(p)}` +
-        `${unit.task ? '<span class="task" aria-hidden="true">…</span>' : ""}</div>`,
+        `${unit.task ? '<span class="task" aria-hidden="true">…</span>' : ""}` +
+        `${awaiting ? '<span class="orders-badge" aria-hidden="true" title="Needs orders">!</span>' : ""}</div>`,
     );
   }
 

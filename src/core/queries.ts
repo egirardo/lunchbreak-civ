@@ -353,9 +353,18 @@ export function rankPlayers(s: GameState): PlayerId[] {
 
 // ---------- turn flow helpers ----------
 
+export function needsOrders(u: Unit): boolean {
+  return u.movesLeft > 0 && !u.skipped && !u.task;
+}
+
+/** Units that still have something to do this turn, in a stable order for cycling through. */
+export function unitsNeedingOrders(s: GameState, pid: PlayerId): Unit[] {
+  return unitsOf(s, pid).filter(needsOrders).sort((a, b) => a.id - b.id);
+}
+
 /** The next unit that still has something to do this turn, for auto-selection. */
 export function nextUnitNeedingOrders(s: GameState, pid: PlayerId, afterId?: number): Unit | null {
-  const ready = unitsOf(s, pid).filter((u) => u.movesLeft > 0 && !u.skipped && !u.task);
+  const ready = unitsNeedingOrders(s, pid);
   if (ready.length === 0) return null;
   if (afterId === undefined) return ready[0] ?? null;
   return ready.find((u) => u.id > afterId) ?? ready[0] ?? null;

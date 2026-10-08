@@ -9,6 +9,7 @@ import {
   defenseStrength,
   reachableTiles,
   tileYields,
+  unitsNeedingOrders,
   workedTiles,
 } from "./queries";
 import {
@@ -380,6 +381,21 @@ describe("victory and scoring", () => {
     expect(after.phase).toBe("ended");
     expect(after.victory).toBe("score");
     expect(after.winner).toBe(2);
+  });
+});
+
+describe("units needing orders", () => {
+  it("lists units with moves left that aren't skipped or working, in id order", () => {
+    const s = makeState();
+    const a = addUnit(s, "warrior", 0, 1, 1);
+    const b = addUnit(s, "worker", 0, 2, 2);
+    const c = addUnit(s, "archer", 0, 3, 3);
+    addUnit(s, "warrior", 1, 5, 5);
+    b.skipped = true;
+    c.movesLeft = 0;
+    const d = addUnit(s, "settler", 0, 4, 4);
+    d.task = { kind: "improve", improvement: "farm" };
+    expect(unitsNeedingOrders(s, 0).map((u) => u.id)).toEqual([a.id]);
   });
 });
 

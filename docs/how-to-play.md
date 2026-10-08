@@ -139,9 +139,10 @@ You earn points from:
 
 ## Controls
 
-- **Click a tile** to move a unit, build a city, or gather resources
+- **Click a tile** to select, move, or attack (or use the **arrow keys** and **Enter**)
 - **Click a city** to build something or change focus
-- **Press Space or Enter** to end your turn
+- **Units needing orders** are listed at the top of the side panel and marked **!** on the map. Use **◀ ▶** (or **P** / **N**) to flip between them
+- **Press Space** to end your turn
 - **Hover over things** to see tooltips with more info
 - **Press ? to open this guide in-game**
 
