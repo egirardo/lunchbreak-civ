@@ -11,7 +11,7 @@
   --focus: #ffe066;
   --sidebar: 340px;
   --topbar: 60px;
-  --tile: clamp(44px, min(calc((100vw - var(--sidebar) - 32px) / 16), calc((100vh - var(--topbar) - 24px) / 12)), 84px);
+  --tile: clamp(44px, min(calc((100vw - var(--sidebar) - 40px) / 16), calc((100vh - var(--topbar) - 40px) / 12)), 84px);
   color-scheme: dark;
 }
 
@@ -104,6 +104,8 @@ kbd {
 
 .sr-only {
   position: absolute;
+  top: 0;
+  left: 0;
   width: 1px;
   height: 1px;
   overflow: hidden;
@@ -131,6 +133,10 @@ kbd {
 }
 
 /* ---------- layout ---------- */
+
+#app {
+  height: 100%;
+}
 
 .layout {
   display: flex;
@@ -217,6 +223,11 @@ kbd {
     border-left: none;
     border-top: 3px solid #000;
     max-height: none;
+  }
+  .sidebar-info {
+    flex: none;
+    min-height: 0;
+    overflow: visible;
   }
   .main {
     overflow-y: auto;
@@ -519,7 +530,40 @@ kbd {
 
 .warnings ul {
   margin: 0;
-  padding-left: 1.1rem;
+  padding: 0;
+  list-style: none;
+}
+
+.warnings li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.2rem 0.5rem;
+  margin: 0.15rem 0;
+}
+
+.sidebar-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  flex: none;
+}
+
+/* Reference info takes the leftover height and scrolls by itself, keeping actions in view. */
+.sidebar-info {
+  flex: 1 1 0;
+  min-height: 5rem;
+  overflow-y: auto;
+}
+
+.info-block > h3:first-child {
+  margin-top: 0;
+}
+
+.info-block + .info-block {
+  margin-top: 0.5rem;
+  padding-top: 0.4rem;
+  border-top: 1px solid #0008;
 }
 
 .attack {
@@ -564,8 +608,8 @@ kbd {
 }
 
 .build-list {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
   gap: 0.3rem;
 }
 
@@ -577,14 +621,57 @@ kbd {
   width: 100%;
 }
 
-.build-item .build-name {
-  flex: 1;
+.build-item {
+  min-height: 44px;
+  padding: 0.25rem 0.4rem;
+}
+
+.build-text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.15;
+  min-width: 0;
 }
 
 .build-item .build-meta {
   color: var(--muted);
+  font-size: 0.75rem;
+  white-space: nowrap;
+}
+
+.build-item {
+  gap: 0.35rem;
+}
+
+.yields-row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.3rem 0.6rem;
+}
+
+.focus-select {
   font-size: 0.85rem;
-  text-align: right;
+  color: var(--muted);
+}
+
+.focus-select select {
+  font: inherit;
+  color: var(--text);
+  background: var(--panel);
+  border: 2px solid var(--border);
+  padding: 0.25rem;
+  min-height: 2rem;
+}
+
+.focus-select select:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 1px;
+}
+
+.city-panel h3 {
+  margin-top: 0.4rem;
 }
 
 .build-item.current {
@@ -592,8 +679,7 @@ kbd {
 }
 
 .buildings {
-  margin: 0;
-  padding-left: 1rem;
+  font-size: 0.9rem;
 }
 
 .events {

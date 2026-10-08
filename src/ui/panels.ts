@@ -95,17 +95,18 @@ export function renderTopbar(s: GameState, timeLeft: string): string {
 
 // ---------- sidebar ----------
 
-function warnings(s: GameState): string {
+function warnings(s: GameState, ui: UiState): string {
   const items: string[] = [];
   const p = getPlayer(s, HUMAN_PLAYER);
   if (!p.researching && availableTechs(s, HUMAN_PLAYER).length > 0) {
-    items.push(`<li>No research chosen. ${btn("open-tech", "Choose tech", { cls: "link" })}</li>`);
+    items.push(`<li><span>⚠ No research</span> ${btn("open-tech", "Choose tech", { cls: "link" })}</li>`);
   }
   for (const c of citiesWithoutProduction(s, HUMAN_PLAYER)) {
-    items.push(`<li>${esc(c.name)} is building nothing. ${btn("open-city", "Open city", { cls: "link", data: { city: c.id } })}</li>`);
+    if (c.id === ui.selectedCityId) continue; // its panel is already open and says so
+    items.push(`<li><span>⚠ ${esc(c.name)}: nothing queued</span> ${btn("open-city", "Open city", { cls: "link", data: { city: c.id } })}</li>`);
   }
   if (items.length === 0) return "";
-  return `<section class="panel warnings" aria-label="Warnings"><h2>⚠ Needs attention</h2><ul>${items.join("")}</ul></section>`;
+  return `<section class="panel warnings" aria-label="Needs attention"><ul>${items.join("")}</ul></section>`;
 }
 
 function unitActions(s: GameState, u: Unit): string {
@@ -183,11 +184,11 @@ function buildButton(city: City, item: BuildItem, prodPerTurn: number): string {
   const current = city.current !== null && city.current.kind === item.kind && city.current.id === item.id;
   const glyph = item.kind === "unit" ? sprite(`unit:${item.id}`, UNIT_GLYPH[item.id], "icon") : sprite(`building:${item.id}`, BUILDING_GLYPH[item.id], "icon");
   const desc = item.kind === "unit" ? UNITS[item.id].description : BUILDINGS[item.id].description;
-  const strength = item.kind === "unit" && UNITS[item.id].strength > 0 ? ` · ${ICON.strength}${UNITS[item.id].strength}` : "";
+  const strength = item.kind === "unit" && UNITS[item.id].strength > 0 ? `${ICON.strength}${UNITS[item.id].strength} · ` : "";
   return btn(
     "build",
-    `${glyph} <span class="build-name">${esc(itemName(item))}</span><span class="build-meta">${cost}${ICON.production}${strength} · ${turnsLabel(turns)}</span>`,
-    { cls: `build-item${current ? " current" : ""}`, data: { city: city.id, kind: item.kind, id: item.id }, pressed: current, title: desc },
+    `${glyph} <span class="build-text"><span class="build-name">${esc(itemName(item))}</span><span class="build-meta">${strength}${turnsLabel(turns)}</span></span>`,
+    { cls: `build-item${current ? " current" : ""}`, data: { city: city.id, kind: item.kind, id: item.id }, pressed: current, title: `${desc} Cost: ${cost} production.` },
   );
 }
 
@@ -200,32 +201,28 @@ function cityPanel(s: GameState, ui: UiState): string {
   const current = city.current;
   const prodText = current
     ? `${esc(itemName(current))}: ${city.production}/${itemCost(current)} (${turnsLabel(turnsToComplete(itemCost(current) - city.production, y.production))})`
-    : `<span class="warn">Nothing! Pick something below.</span>`;
+    : `<span class="warn">nothing yet</span>`;
   const hasLibrary = city.buildings.includes("library");
-  const focusButtons = (Object.keys(FOCUS_LABELS) as CityFocus[])
-    .map((f) =>
-      btn("focus", FOCUS_LABELS[f], {
-        data: { city: city.id, focus: f },
-        pressed: city.focus === f,
-        disabled: f === "science" && !hasLibrary,
-        title: f === "science" && !hasLibrary ? "Needs a Library" : f === "science" ? "+50% science in this city" : `Prioritize ${f} tiles`,
-      }),
-    )
+  const focusOptions = (Object.keys(FOCUS_LABELS) as CityFocus[])
+    .map((f) => {
+      const label = f === "science" ? (hasLibrary ? "Science (+50%)" : "Science (needs Library)") : FOCUS_LABELS[f];
+      return `<option value="${f}"${city.focus === f ? " selected" : ""}${f === "science" && !hasLibrary ? " disabled" : ""}>${label}</option>`;
+    })
     .join("");
+  const focusSelect = `<label class="focus-select">Focus <select data-action="focus" data-city="${city.id}" data-focus-key="focus-${city.id}" title="Which tiles this city prioritises">${focusOptions}</select></label>`;
   const items = buildableItems(s, city).map((item) => buildButton(city, item, y.production)).join("");
-  const buildings = city.buildings.length
-    ? city.buildings.map((b) => `<li title="${esc(BUILDINGS[b].description)}">${sprite(`building:${b}`, BUILDING_GLYPH[b], "icon")} ${esc(BUILDINGS[b].name)}</li>`).join("")
-    : "<li class='hint'>None yet</li>";
+  const buildings = city.buildings
+    .map((b) => `<span title="${esc(BUILDINGS[b].description)}">${sprite(`building:${b}`, BUILDING_GLYPH[b], "icon")} ${esc(BUILDINGS[b].name)}</span>`)
+    .join(" ");
   return `<section class="panel city-panel" aria-label="City ${esc(city.name)}">
     <div class="panel-head"><h2>${city.isCapital ? "★ " : ""}${esc(city.name)} <small>pop ${city.population}/${RULES.maxPopulation}</small></h2>${btn("close-city", "✕", { cls: "icon-btn", title: "Close city (Esc)" })}</div>
-    <p class="yields">${icon("ui:food", ICON.food)} +${y.food} ${icon("ui:production", ICON.production)} +${y.production} ${icon("ui:science", ICON.science)} +${y.science}${y.culture ? ` ${icon("ui:culture", ICON.culture)} +${y.culture}` : ""}</p>
-    <p>${icon("ui:food", ICON.food)} Growth: ${growing ? `${city.food}/${RULES.foodToGrow} (${turnsLabel(foodTurns)})` : "max size"}</p>
+    <div class="yields-row"><p class="yields">${icon("ui:food", ICON.food)} +${y.food} ${icon("ui:production", ICON.production)} +${y.production} ${icon("ui:science", ICON.science)} +${y.science}${y.culture ? ` ${icon("ui:culture", ICON.culture)} +${y.culture}` : ""}</p>${focusSelect}</div>
+    <p>Growth: ${growing ? `${city.food}/${RULES.foodToGrow} (${turnsLabel(foodTurns)})` : "max size"}</p>
     ${growing ? bar(city.food, RULES.foodToGrow, "Food toward next population") : ""}
-    <p>${icon("ui:production", ICON.production)} ${prodText}</p>
+    <p>Building: ${prodText}</p>
     ${current ? bar(city.production, itemCost(current), "Production progress") : ""}
-    <h3>Focus</h3><div class="focus-row" role="group" aria-label="City focus">${focusButtons}</div>
     <h3>Build</h3><div class="build-list">${items}</div>
-    <h3>Buildings</h3><ul class="buildings">${buildings}</ul>
+    ${buildings ? `<p class="buildings">Built: ${buildings}</p>` : ""}
   </section>`;
 }
 
@@ -233,14 +230,14 @@ function tileInfo(s: GameState, ui: UiState): string {
   const { x, y } = ui.cursor;
   const tile = getTile(s, x, y);
   const explored = getPlayer(s, HUMAN_PLAYER).explored[y * s.width + x];
-  if (!tile || !explored) return `<section class="panel tile-info" aria-label="Tile info"><h2>Unexplored</h2></section>`;
+  if (!tile || !explored) return `<section class="info-block tile-info" aria-label="Tile info"><h3>Tile</h3><p>Unexplored</p></section>`;
   const yields = TERRAIN[tile.terrain].passable ? tileYields(s, x, y) : null;
   const owner = tile.owner !== null ? getPlayer(s, tile.owner) : null;
   const city = cityAt(s, x, y);
   const enemyCity = city && city.owner !== HUMAN_PLAYER ? city : null;
-  return `<section class="panel tile-info" aria-label="Tile info">
-    <h2>${esc(TERRAIN[tile.terrain].name)}${tile.river ? " + river" : ""}${tile.improvement ? ` + ${esc(IMPROVEMENTS[tile.improvement].name)}` : ""}</h2>
-    <p>${yields ? `${icon("ui:food", ICON.food)} ${yields.food} ${icon("ui:production", ICON.production)} ${yields.production}` : "Impassable"}${owner ? ` · ${ownerBadge(owner)} ${esc(owner.name)}` : ""}</p>
+  return `<section class="info-block tile-info" aria-label="Tile info">
+    <h3>Tile</h3>
+    <p><strong>${esc(TERRAIN[tile.terrain].name)}${tile.river ? " + river" : ""}${tile.improvement ? ` + ${esc(IMPROVEMENTS[tile.improvement].name)}` : ""}</strong> · ${yields ? `${icon("ui:food", ICON.food)} ${yields.food} ${icon("ui:production", ICON.production)} ${yields.production}` : "Impassable"}${owner ? ` · ${ownerBadge(owner)} ${esc(owner.name)}` : ""}</p>
     ${enemyCity ? `<p>${esc(enemyCity.name)} · pop ${enemyCity.population}${enemyCity.buildings.includes("walls") ? " · walls" : ""}</p>` : ""}
   </section>`;
 }
@@ -261,7 +258,7 @@ function rivalsPanel(s: GameState): string {
         : "";
       return `<li><span class="rival-swatch" style="background:${p.color}"></span> ${esc(p.name)}: 🏆 ${computeScore(s, p.id).total} · ${citiesOf(s, p.id).length === 1 ? "1 city" : `${citiesOf(s, p.id).length} cities`}${culture}</li>`;
     });
-  return `<section class="panel rivals" aria-label="Rivals"><h3>Rivals</h3><ul class="rival-list">${rows.join("")}</ul></section>`;
+  return `<section class="info-block rivals" aria-label="Rivals"><h3>Rivals</h3><ul class="rival-list">${rows.join("")}</ul></section>`;
 }
 
 function logPanel(s: GameState, ui: UiState): string {
@@ -269,17 +266,21 @@ function logPanel(s: GameState, ui: UiState): string {
   const lastTurn = ui.lastTurnEvents.length
     ? `<h3>Last turn</h3>${eventList(ui.lastTurnEvents, "")}`
     : "";
-  return `<section class="panel log" aria-label="Event log">${lastTurn}<h3>Recent events</h3>${eventList(recent, "Nothing has happened yet.")}</section>`;
+  return `<section class="info-block log" aria-label="Event log">${lastTurn}<h3>Recent events</h3>${eventList(recent, "Nothing has happened yet.")}</section>`;
 }
 
 export function renderSidebar(s: GameState, ui: UiState): string {
-  return [warnings(s), attackPanel(s, ui), cityPanel(s, ui), unitPanel(s, ui), tileInfo(s, ui), rivalsPanel(s), logPanel(s, ui)].join("");
+  // Things to act on stay at the top; reference info scrolls on its own below so actions never fall off-screen.
+  const focus = cityPanel(s, ui) || unitPanel(s, ui);
+  const actions = [warnings(s, ui), attackPanel(s, ui), focus].join("");
+  const info = [tileInfo(s, ui), rivalsPanel(s), logPanel(s, ui)].join("");
+  return `<div class="sidebar-actions">${actions}</div><div class="panel sidebar-info" role="region" aria-label="Map info, rivals and events" tabindex="0">${info}</div>`;
 }
 
 // ---------- modals ----------
 
 function dialog(id: string, title: string, body: string, cls = ""): string {
-  return `<div class="backdrop"><div class="dialog ${cls}" role="dialog" aria-modal="true" aria-labelledby="${id}-title"><h2 id="${id}-title">${title}</h2>${body}</div></div>`;
+  return `<div class="backdrop"><div class="dialog ${cls}" role="dialog" aria-modal="true" tabindex="-1" aria-labelledby="${id}-title"><h2 id="${id}-title">${title}</h2>${body}</div></div>`;
 }
 
 function startModal(ui: UiState): string {
@@ -346,7 +347,7 @@ function helpModal(): string {
       <li><kbd>Space</kbd> end turn · <kbd>N</kbd> next unit · <kbd>S</kbd> skip unit · <kbd>F</kbd> found city · <kbd>G</kbd>/<kbd>M</kbd> build farm/mine</li>
       <li><kbd>C</kbd> open city at cursor · <kbd>T</kbd> tech tree · <kbd>?</kbd> help · <kbd>Esc</kbd> close / cancel</li>
     </ul>
-    <div class="row-buttons">${btn("close-modal", `Close${kbd("Esc")}`, { cls: "primary" })}</div>`, "wide");
+    <div class="row-buttons">${btn("close-modal", `Close${kbd("Esc")}`, { cls: "primary" })}</div>`, "wide reading");
 }
 
 function awayModal(s: GameState, ui: UiState): string {

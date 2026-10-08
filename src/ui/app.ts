@@ -59,6 +59,7 @@ export class App {
   private readonly map: HTMLElement;
   private readonly sidebar: HTMLElement;
   private readonly modal: HTMLElement;
+  private pointerDownOnBackdrop = false;
   private readonly live: HTMLElement;
 
   constructor(root: HTMLElement) {
@@ -85,7 +86,15 @@ export class App {
     this.modal = get("modal");
     this.live = get("live");
 
+    // Only treat a click as "outside" if it also started outside, so dragging from inside a dialog doesn't close it.
+    root.addEventListener("pointerdown", (e) => {
+      this.pointerDownOnBackdrop = (e.target as HTMLElement).classList.contains("backdrop");
+    });
     root.addEventListener("click", (e) => this.onClick(e));
+    root.addEventListener("change", (e) => {
+      const select = e.target as HTMLSelectElement;
+      if (select.dataset.action === "focus") this.handleAction("focus", { ...select.dataset, focus: select.value });
+    });
     document.addEventListener("keydown", (e) => this.onKey(e));
     const unlock = (): void => {
       if (this.audioUnlocked) return;
@@ -162,7 +171,11 @@ export class App {
     this.layout.inert = this.ui.modal !== null;
 
     if (this.ui.modal !== this.lastModal && this.ui.modal !== null) {
-      this.modal.querySelector<HTMLElement>(".dialog button:not([disabled])")?.focus();
+      const dialog = this.modal.querySelector<HTMLElement>(".dialog");
+      // Long reading dialogs focus themselves so they open at the top and arrow keys scroll them.
+      const target = dialog?.classList.contains("reading") ? dialog : this.modal.querySelector<HTMLElement>(".dialog button:not([disabled])");
+      target?.focus({ preventScroll: true });
+      if (dialog) dialog.scrollTop = 0;
     } else if (this.ui.modal === null && this.lastModal !== null) {
       this.map.focus();
     } else if (mapFocused) {
@@ -481,6 +494,10 @@ export class App {
 
   private onClick(e: MouseEvent): void {
     const target = e.target as HTMLElement;
+    if (target.classList.contains("backdrop") && this.pointerDownOnBackdrop) {
+      this.closeModal();
+      return;
+    }
     const button = target.closest<HTMLElement>("[data-action]");
     if (button) {
       this.handleAction(button.dataset.action ?? "", button.dataset);
