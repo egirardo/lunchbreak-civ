@@ -99,7 +99,11 @@ export class App {
     root.addEventListener("change", (e) => {
       const select = e.target as HTMLSelectElement;
       // Selects use data-change (not data-action) so clicking to open them isn't treated as a button press.
-      if (select.dataset.change === "focus") this.handleAction("focus", { ...select.dataset, focus: select.value });
+      if (select.dataset.change !== "focus") return;
+      const key = select.dataset.focusKey;
+      this.handleAction("focus", { ...select.dataset, focus: select.value });
+      // With a styled option list, focus sits on the option when the panel re-renders, so restore it explicitly.
+      if (key) document.querySelector<HTMLElement>(`[data-focus-key="${CSS.escape(key)}"]`)?.focus();
     });
     document.addEventListener("keydown", (e) => this.onKey(e));
     const unlock = (): void => {

@@ -657,17 +657,84 @@ kbd {
 }
 
 .focus-select select {
+  appearance: none;
   font: inherit;
   color: var(--text);
-  background: var(--panel);
+  background-color: var(--panel-2);
+  /* Pixel-art arrow to match the sprites. */
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 5 3' shape-rendering='crispEdges'%3E%3Cpath fill='%23f2c14e' d='M0 0h5v1H0zM1 1h3v1H1zM2 2h1v1H2z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.55rem center;
+  background-size: 10px 6px;
+  image-rendering: pixelated;
   border: 2px solid var(--border);
-  padding: 0.25rem;
-  min-height: 2rem;
+  border-radius: 2px;
+  box-shadow: 0 3px 0 #0008;
+  padding: 0.3rem 1.9rem 0.3rem 0.6rem;
+  min-height: 40px;
+  cursor: pointer;
+}
+
+.focus-select select:hover {
+  border-color: var(--accent);
 }
 
 .focus-select select:focus-visible {
   outline: 3px solid var(--focus);
   outline-offset: 1px;
+}
+
+.focus-select option:disabled {
+  color: var(--muted);
+}
+
+/* Browsers with customizable selects (Chrome/Edge 135+) also get a themed option list; others show the system list. */
+@supports (appearance: base-select) {
+  .focus-select select,
+  .focus-select select::picker(select) {
+    appearance: base-select;
+  }
+
+  .focus-select select::picker-icon {
+    display: none;
+  }
+
+  .focus-select select::picker(select) {
+    background: var(--panel);
+    color: var(--text);
+    border: 2px solid var(--accent);
+    border-radius: 2px;
+    box-shadow: 0 4px 0 #000;
+    padding: 0.2rem;
+    margin-top: 4px;
+  }
+
+  .focus-select option {
+    font: inherit;
+    padding: 0.45rem 0.6rem;
+    min-height: 40px;
+    border: 2px solid transparent;
+  }
+
+  .focus-select option:hover:not(:disabled),
+  .focus-select option:focus-visible {
+    background: var(--panel-2);
+    border-color: var(--accent);
+    outline: none;
+  }
+
+  .focus-select option:checked {
+    background: #3d4a2f;
+  }
+
+  .focus-select option::checkmark {
+    color: var(--good);
+  }
+
+  .focus-select option:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+  }
 }
 
 .city-panel h3 {
