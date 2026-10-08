@@ -359,8 +359,8 @@ export function attack(state: GameState, unitId: number, target: Point): AttackR
       capturedCityId = city.id;
       captureCity(s, city, a.owner);
     } else {
-      const what = defenderUnit ? UNITS[defenderUnit.type].name : `the garrison of ${city?.name ?? "the city"}`;
-      addEvent(s, "combat", `${attackerName}'s ${UNITS[a.type].name} defeated ${defenderName}'s ${what} (${preview.attack} vs ${preview.defense}).`, involves, target);
+      const what = defenderUnit ? `${defenderName}'s ${UNITS[defenderUnit.type].name}${city ? ` defending ${city.name}` : ""}` : (city?.name ?? defenderName);
+      addEvent(s, "combat", `${attackerName}'s ${UNITS[a.type].name} defeated ${what} (${preview.attack} vs ${preview.defense}).`, involves, target);
     }
   } else if (ranged) {
     addEvent(s, "combat", `${attackerName}'s Archer attack failed (${preview.attack} vs ${preview.defense}).`, involves, target);

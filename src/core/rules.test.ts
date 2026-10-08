@@ -239,6 +239,30 @@ describe("combat", () => {
     expect(r.state.units).toHaveLength(2);
   });
 
+  it("archers can't target an undefended city, since ranged attacks never capture", () => {
+    const s = makeState();
+    const city = addCity(s, 1, 4, 4);
+    const archer = addUnit(s, "archer", 0, 2, 4);
+    expect(attackTargets(s, archer)).toEqual([]);
+    addUnit(s, "worker", 1, 4, 4);
+    expect(attackTargets(s, archer)).toEqual([]);
+    expect(() => attack(s, archer.id, city)).toThrow(RuleError);
+  });
+
+  it("an archer that beats a city's defender removes it but doesn't capture the city", () => {
+    const s = makeState();
+    const city = addCity(s, 1, 4, 4);
+    addUnit(s, "warrior", 1, 4, 4);
+    const archer = addUnit(s, "archer", 0, 2, 4);
+    addUnit(s, "warrior", 0, 3, 3);
+    expect(attackTargets(s, archer)).toContainEqual({ x: 4, y: 4 });
+    const r = attack(s, archer.id, city);
+    expect(r.attackerWon).toBe(true);
+    expect(r.state.cities[0]?.owner).toBe(1);
+    expect(r.state.units.some((u) => u.owner === 1)).toBe(false);
+    expect(r.state.events.at(-1)?.message).toBe("P0's Archer defeated P1's Warrior defending " + city.name + " (8 vs 6).");
+  });
+
   it("workers cannot be attacked", () => {
     const s = makeState();
     const w = addUnit(s, "warrior", 0, 2, 2);

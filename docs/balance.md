@@ -110,6 +110,27 @@ The end screen records these automatically. Use **Copy summary** and paste the t
 
 **Candidate fixes (not yet decided or tested):** make capitals sturdier (higher base defense, or a defence bonus from the garrison), keep a second AI defender next to the capital, or make capital capture less decisive (e.g. a player is only eliminated after losing all cities). Test each against a smarter "capital-hunting" scripted player first.
 
+### Playtest 5 — 2026-10-08
+
+| Measure | Result |
+|---|---|
+| Difficulty | Easy |
+| Total time | **19:58** (avg 46s per turn) |
+| Turn the game ended | **26** (domination) |
+| Ending | **Domination victory**: both rivals eliminated |
+| Cities | 4 (2 founded, 2 captured, 0 lost) |
+| Techs | 6 of 12 |
+| Units | 10 built, **0 lost**; battles 7 won, 0 lost |
+| Buildings | 3 |
+
+**Notes:** First game with the garrison +1 rule. The player reported that on turns 23 and 24 the attack preview said they would win against a city, they confirmed, and nothing happened.
+
+**Bug found:** an Archer could target an undefended city. The preview said "You will win", but ranged attacks can't capture, so nothing changed on the map. The Archer still lost its turn, and the game logged a battle won with a garbled message. Fixed: Archers can now only target cities with a military defender inside, and the preview explains that the defender is destroyed but a melee unit must move in to capture. Part of the "7 battles won" here may be those empty attacks.
+
+**Observations:**
+- **Domination on Easy, turn 26, again with no losses.** Capitals took longer to fall than in Playtest 4 (the game ran 46s per turn and nearly 20 minutes), which is consistent with the garrison rule slowing conquest. The AIs still never killed a single player unit. Easy is meant to be forgiving, so this is acceptable there; watch Normal.
+- **Pacing is on target** at 19:58.
+
 ## Changes
 
 ### 2026-10-08 — Garrisoned cities get +1 defense (after Walls)

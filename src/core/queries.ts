@@ -284,6 +284,9 @@ export function attackTargets(s: GameState, unit: Unit): Point[] {
     const target = unitAt(s, p.x, p.y);
     const enemyCity = city !== undefined && city.owner !== unit.owner;
     const enemyUnit = target !== undefined && target.owner !== unit.owner && (UNITS[target.type].canBeAttacked || enemyCity);
+    // Ranged attacks can't capture, so a city is only worth shooting at if a military defender is inside.
+    const defended = target !== undefined && UNITS[target.type].attack !== "none";
+    if (def.attack === "ranged" && enemyCity && !defended) continue;
     if (enemyCity || enemyUnit) out.push(p);
   }
   return out;

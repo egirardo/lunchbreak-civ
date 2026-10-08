@@ -169,7 +169,7 @@ function attackPanel(s: GameState, ui: UiState): string {
   const name = city ? `${city.name}${city.buildings.includes("walls") ? " (walls)" : ""}` : target ? `${getPlayer(s, target.owner).name}'s ${UNITS[target.type].name}` : "target";
   const ranged = UNITS[attacker.type].attack === "ranged";
   const outcome = preview.attackerWins
-    ? `<strong class="good">You will win.</strong>${city && !ranged ? " You will capture the city." : ""}`
+    ? `<strong class="good">You will win.</strong>${city ? (ranged ? " The defender is destroyed, but Archers can't capture cities: move a melee unit in next." : " You will capture the city.") : ""}`
     : `<strong class="bad">You will lose.</strong>${ranged ? " Your Archer survives." : " Your unit will be destroyed."}`;
   return `<section class="panel attack" aria-label="Attack preview">
     <h2>Attack ${esc(name)}?</h2>
