@@ -32,6 +32,7 @@ import { isMusicEnabled, isMuted } from "./audio";
 import { esc, plural, turnsLabel, turnsToComplete } from "./format";
 import { BUILDING_GLYPH, ICON, UNIT_GLYPH, icon, sprite } from "./glyphs";
 import { averageSecondsPerTurn, formatDuration, gameSummaryText } from "./summary";
+import { legendHtml } from "./legend";
 import { renderMarkdown } from "./markdown";
 import { ownerBadge } from "./mapView";
 import type { SidebarTab, UiState } from "./uiState";
@@ -368,8 +369,12 @@ function techModal(s: GameState): string {
 }
 
 function helpModal(): string {
-  return dialog("help", "How to Play", `<div class="guide">${renderMarkdown(howToPlay.replace(/^# .*\n/, ""))}</div>
-    <h3>Keyboard</h3>
+  return dialog("help", "How to Play", `<nav class="help-jump" aria-label="Jump to section">Jump to: <a href="#help-rules">Rules</a> · <a href="#help-symbols">Symbols</a> · <a href="#help-keys">Keyboard</a></nav>
+    <div class="guide" id="help-rules">${renderMarkdown(howToPlay.replace(/^# .*\n/, ""))}</div>
+    <h3 id="help-symbols">Symbols</h3>
+    <p class="hint">Every icon and map marking you'll see while playing.</p>
+    ${legendHtml()}
+    <h3 id="help-keys">Keyboard</h3>
     <ul class="keys">
       <li><kbd>Arrows</kbd> move the map cursor · <kbd>Enter</kbd> act on the cursor tile (select / move / attack)</li>
       <li><kbd>Space</kbd> end turn · <kbd>N</kbd>/<kbd>P</kbd> next/previous unit needing orders · <kbd>S</kbd> skip unit · <kbd>F</kbd> found city · <kbd>G</kbd>/<kbd>M</kbd> build farm/mine</li>

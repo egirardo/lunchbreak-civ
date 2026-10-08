@@ -1095,3 +1095,138 @@ kbd {
   border: 2px solid #000;
   z-index: 2;
 }
+
+.help-jump {
+  margin-bottom: 0.5rem;
+  color: var(--muted);
+}
+
+.help-jump a {
+  color: var(--accent);
+}
+
+table.legend {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 0.4rem 0 1rem;
+}
+
+table.legend caption {
+  text-align: left;
+  font-weight: bold;
+  color: var(--accent);
+  padding: 0.3rem 0;
+}
+
+table.legend td {
+  padding: 0.3rem 0.5rem;
+  border-bottom: 1px solid #0008;
+  vertical-align: middle;
+}
+
+.legend-sym {
+  width: 6.5rem;
+  text-align: center;
+  white-space: nowrap;
+  font-size: 1.15rem;
+}
+
+.legend-sprite {
+  width: 32px;
+  height: 32px;
+  image-rendering: pixelated;
+  vertical-align: middle;
+}
+
+.legend-badge {
+  position: static;
+  display: inline-block;
+}
+
+/* Small replicas of map tiles so the legend shows exactly what the map shows. */
+.legend-tile {
+  position: relative;
+  display: inline-block;
+  width: 36px;
+  height: 36px;
+  vertical-align: middle;
+  background: #5a8f3a;
+  border: 1px solid #000;
+  overflow: visible;
+}
+
+.legend-tile .legend-sprite {
+  width: 100%;
+  height: 100%;
+}
+
+.legend-tile.territory {
+  --pc: #3b7dd8;
+  border: 3px solid var(--pc);
+  background-color: #5a8f3a;
+}
+
+.legend-tile .legend-flag {
+  top: -6px;
+  right: -6px;
+  font-size: 0.75rem;
+}
+
+.legend-tile .legend-task {
+  position: absolute;
+  inset: auto 2px 0 auto;
+}
+
+.legend-tile.grass {
+  background: none;
+}
+
+.legend-layer {
+  display: block;
+  width: 100%;
+  height: 100%;
+  image-rendering: pixelated;
+}
+
+.legend-over {
+  position: absolute;
+  inset: 0;
+}
+
+.legend-over > .legend-flag,
+.legend-over > .legend-task {
+  position: absolute;
+}
+
+.legend-spent {
+  display: block;
+  width: 100%;
+  height: 100%;
+  opacity: 0.6;
+}
+
+.reach-swatch {
+  background-color: #ffffff2a;
+  border: 2px dashed #fff;
+}
+
+.target-swatch {
+  background-color: #ff3b3044;
+  border: 3px solid #ff5a4f;
+  background-image: repeating-linear-gradient(-45deg, #ff3b3055 0 4px, transparent 4px 8px);
+}
+
+.cursor-swatch {
+  background: transparent;
+  border: 3px solid var(--focus);
+  box-shadow: inset 0 0 0 2px #000;
+}
+
+.fog-swatch .legend-sprite {
+  filter: brightness(0.5) saturate(0.5);
+}
+
+.unexplored-swatch {
+  background: #07080a;
+  background-image: repeating-linear-gradient(45deg, #111 0 2px, transparent 2px 8px);
+}

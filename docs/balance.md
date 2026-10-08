@@ -39,12 +39,12 @@ The end screen records these automatically. Use **Copy summary** and paste the t
 | Buildings | 1 |
 | Culture | 0 |
 
-**Notes:** No written impressions yet. Stats came from the end-screen summary.
+**Notes:** Stats came from the end-screen summary. The player felt they missed development opportunities because their other cities' panels were hard to reach. This game was played before the orders bar and Actions/Log tabs existed, when an open city panel hid the rest of the turn's options.
 
 **Observations:**
 - **Pacing is on target.** 19:55 total and 40s per turn match the 20-minute / 40-second design goals exactly.
 - **A close finish.** All three scores ended within 10 points, which suggests the score race is competitive rather than a runaway.
-- **Low tech count.** The player researched 5 techs against a target of 8–9; the Easy AIs got 7–8. Possible causes are fewer Libraries (1 building total), turns with no research chosen, or military spending. Watch this in future playtests before tuning science.
+- **Low tech count, likely a UI cause.** The player researched 5 techs against a target of 8–9; the Easy AIs got 7–8, with only 1 building total. By the player's account, cities were under-managed because their panels were hard to find, so this is more likely UI friction than science costs. Don't tune science until playtests on the new UI confirm it.
 - **Easy may be harder than simulations suggest.** In simulation the AI-played human seat won 5 of 6 Easy games; here a human lost narrowly. One game isn't enough to act on.
 - **Playtest 1's early-rush concern didn't recur.** One city was captured, but no rival was eliminated and the game went to turn 30.
 
